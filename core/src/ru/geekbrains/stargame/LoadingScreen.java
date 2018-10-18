@@ -52,11 +52,10 @@ public class LoadingScreen extends ScreenAdapter {
 
         game.getAssetManager().load("assets.atlas", TextureAtlas.class);
 
-//        BitmapFontLoader.BitmapFontParameter bfp =                            // Error
-//                new BitmapFontLoader.BitmapFontParameter();
-//        bfp.atlasName = "space_font.png";
-//
-//        game.getAssetManager().load("space_font.fnt", BitmapFont.class, bfp);
+        BitmapFontLoader.BitmapFontParameter bfp =
+                new BitmapFontLoader.BitmapFontParameter();
+
+        game.getAssetManager().load("space_font.fnt", BitmapFont.class, bfp);
 
 
     }

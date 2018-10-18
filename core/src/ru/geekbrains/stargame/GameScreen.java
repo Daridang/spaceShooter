@@ -69,8 +69,7 @@ public class GameScreen extends ScreenAdapter {
 
         text = new GlyphLayout();
 
-        //font = starGame.getAssetManager().get("space_font.fnt");              // Error
-        font = new BitmapFont(Gdx.files.internal("space_font.fnt"));
+        font = starGame.getAssetManager().get("space_font.fnt");
         atlas = starGame.getAssetManager().get("assets.atlas");
 
         background = new Background(atlas);
