@@ -3,6 +3,7 @@ package ru.geekbrains.stargame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -17,6 +18,8 @@ import com.badlogic.gdx.utils.DelayedRemovalArray;
 import com.badlogic.gdx.utils.Logger;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+
+import java.util.Iterator;
 
 /**
  * Created by
@@ -39,6 +42,8 @@ public class GameScreen extends ScreenAdapter {
     private Background background;
 
     private Player player;
+
+    private DelayedRemovalArray<Enemy> enemies;
 
     public GameScreen(StarGame starGame) {
         this.starGame = starGame;
@@ -72,8 +77,24 @@ public class GameScreen extends ScreenAdapter {
         font = starGame.getAssetManager().get("space_font.fnt");
         atlas = starGame.getAssetManager().get("assets.atlas");
 
+        setUpSound();
+
         background = new Background(atlas);
         player = new Player(atlas);
+        enemies = new DelayedRemovalArray<Enemy>();
+        enemies.add(new Enemy(atlas));
+    }
+
+    private void setUpSound() {
+        getMusic().setLooping(true);
+        getMusic().setVolume(0.2f);
+        getMusic().play();
+    }
+
+    private Music getMusic() {
+        return  starGame
+                .getAssetManager()
+                .get("through_space.ogg", Music.class);
     }
 
     public void render(float delta) {
@@ -87,8 +108,11 @@ public class GameScreen extends ScreenAdapter {
 
         batch.begin();
         // прорисовка текстур здесь
-        background.update(delta, batch);
-        player.update(batch, delta);
+        background.render(delta, batch);
+        player.render(batch, delta);
+        for (Enemy e : enemies) {
+            e.render(batch, delta);
+        }
 
         text.setText(font, "Space\tShooter");
         font.draw(batch, text, StarGame.WORLD_WIDTH / 4, StarGame.WORLD_HEIGHT - 50);
@@ -118,5 +142,6 @@ public class GameScreen extends ScreenAdapter {
     public void dispose() {
         batch.dispose();
         atlas.dispose();
+        getMusic().dispose();
     }
 }

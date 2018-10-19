@@ -27,7 +27,7 @@ public class Player {
         position = new Vector2(StarGame.WORLD_WIDTH / 2, region.getRegionHeight());
     }
 
-    public void update(SpriteBatch batch, float delta) {
+    public void render(SpriteBatch batch, float delta) {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             flyLeft(delta);
             region = animation.getAnimationLeft().getKeyFrame(delta);

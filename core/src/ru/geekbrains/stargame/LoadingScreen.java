@@ -3,6 +3,7 @@ package ru.geekbrains.stargame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.loaders.BitmapFontLoader;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -56,8 +57,7 @@ public class LoadingScreen extends ScreenAdapter {
                 new BitmapFontLoader.BitmapFontParameter();
 
         game.getAssetManager().load("space_font.fnt", BitmapFont.class, bfp);
-
-
+        game.getAssetManager().load("through_space.ogg", Music.class);
     }
 
     @Override

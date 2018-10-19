@@ -23,19 +23,19 @@ public class Background {
     private int speed = 80;
     private float y1, y2;
 
-    public Background (TextureAtlas atlas) {
+    public Background(TextureAtlas atlas) {
 
         back = atlas.findRegion("space_bck4");
         y1 = 0;
         y2 = back.getRegionHeight();
     }
 
-    public void update(float deltaTime, SpriteBatch batch) {
+    public void render(float deltaTime, SpriteBatch batch) {
 
         y1 -= speed * deltaTime;
         y2 -= speed * deltaTime;
 
-        if (y1 + back.getRegionHeight()  <= 0)
+        if (y1 + back.getRegionHeight() <= 0)
             y1 = y2 + back.getRegionHeight();
 
         if (y2 + back.getRegionHeight() <= 0)
