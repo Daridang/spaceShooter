@@ -20,7 +20,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class Background {
     private TextureRegion back;
-    private int speed = 80;
+    public static int SPEED = 80;
     private float y1, y2;
 
     public Background(TextureAtlas atlas) {
@@ -32,8 +32,8 @@ public class Background {
 
     public void render(float deltaTime, SpriteBatch batch) {
 
-        y1 -= speed * deltaTime;
-        y2 -= speed * deltaTime;
+        y1 -= SPEED * deltaTime;
+        y2 -= SPEED * deltaTime;
 
         if (y1 + back.getRegionHeight() <= 0)
             y1 = y2 + back.getRegionHeight();

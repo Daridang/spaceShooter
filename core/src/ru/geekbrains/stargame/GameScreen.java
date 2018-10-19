@@ -12,10 +12,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.DelayedRemovalArray;
 import com.badlogic.gdx.utils.Logger;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -92,7 +94,7 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private Music getMusic() {
-        return  starGame
+        return starGame
                 .getAssetManager()
                 .get("through_space.ogg", Music.class);
     }
@@ -110,13 +112,37 @@ public class GameScreen extends ScreenAdapter {
         // прорисовка текстур здесь
         background.render(delta, batch);
         player.render(batch, delta);
+
+        enemies.begin();
+        randomEnemySpawn();
         for (Enemy e : enemies) {
             e.render(batch, delta);
         }
+        removeEnemy();
+        enemies.end();
 
         text.setText(font, "Space\tShooter");
         font.draw(batch, text, StarGame.WORLD_WIDTH / 4, StarGame.WORLD_HEIGHT - 50);
         batch.end();
+    }
+
+    private float spawnDelta = MathUtils.random(1000f, 5000f);
+
+    private void randomEnemySpawn() {
+        long currentTime = TimeUtils.millis();
+
+        if (currentTime - enemies.peek().getSpawnTime() > spawnDelta) {
+
+            enemies.add(new Enemy(atlas));
+        }
+    }
+
+    private void removeEnemy() {
+        for (int i = 0; i < enemies.size; i++) {
+            if (enemies.get(i).isOutOfScreen()) {
+                enemies.removeIndex(i);
+            }
+        }
     }
 
     private void stopLeavingTheScreen() {
@@ -130,8 +156,8 @@ public class GameScreen extends ScreenAdapter {
         if (player.getPosition().x + player.getRegion()
                 .getRegionWidth() > StarGame.WORLD_WIDTH) {
             player.setPosition(new Vector2(
-                    StarGame.WORLD_WIDTH - player.getRegion().getRegionHeight(),
-                    player.getPosition().y
+                            StarGame.WORLD_WIDTH - player.getRegion().getRegionHeight(),
+                            player.getPosition().y
                     )
             );
         }

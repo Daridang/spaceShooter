@@ -4,7 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.Random;
 
@@ -23,15 +25,23 @@ public class Enemy {
     private Random random;
     private float speed;
     private boolean isOutOfScreen = false;
+    private long spawnTime;
 
     public Enemy(TextureAtlas atlas) {
         region = atlas.findRegion("stateczek");
+        spawnTime = TimeUtils.millis();
+
+        // ??? every 2nd is not flipped ???
         region.flip(false, true);
+        if (!region.isFlipY()) {
+            region.flip(false, true);
+        }
+
         random = new Random();
         position = new Vector2(
                 random.nextInt((int) StarGame.WORLD_WIDTH - region.getRegionWidth()),
                 StarGame.WORLD_HEIGHT * 2);
-        speed = random.nextFloat() * 300f;
+        speed = MathUtils.random(100f, 300f);
     }
 
     public void render(SpriteBatch batch, float delta) {
@@ -40,7 +50,7 @@ public class Enemy {
             isOutOfScreen = true;
         }
         batch.draw(region, position.x, position.y);
-        Gdx.app.log("TAG", String.valueOf(isOutOfScreen));
+        //Gdx.app.log("TAG", String.valueOf(isOutOfScreen));
     }
 
     public Vector2 getPosition() {
@@ -65,6 +75,10 @@ public class Enemy {
 
     public void setOutOfScreen(boolean outOfScreen) {
         isOutOfScreen = outOfScreen;
+    }
+
+    public long getSpawnTime() {
+        return spawnTime;
     }
 
 }
