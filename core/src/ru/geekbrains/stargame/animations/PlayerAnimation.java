@@ -1,4 +1,4 @@
-package ru.geekbrains.stargame;
+package ru.geekbrains.stargame.animations;
 
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;

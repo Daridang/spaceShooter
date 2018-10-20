@@ -16,13 +16,13 @@ import com.badlogic.gdx.math.Vector2;
  */
 
 public class Player {
-    private PlayerAnimation animation;
+    private ru.geekbrains.stargame.animations.PlayerAnimation animation;
     private TextureRegion region;
     private Vector2 position;
     private float speed = 200f;
 
     public Player(TextureAtlas atlas) {
-        animation = new PlayerAnimation(atlas);
+        animation = new ru.geekbrains.stargame.animations.PlayerAnimation(atlas);
         region = animation.getIdle().first();
         position = new Vector2(StarGame.WORLD_WIDTH / 2, region.getRegionHeight());
     }

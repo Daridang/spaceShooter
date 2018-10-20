@@ -2,18 +2,20 @@ package ru.geekbrains.stargame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 /**
@@ -30,9 +32,11 @@ public class MainScreen extends ScreenAdapter {
     private Stage stage;
     private BitmapFont font;
     private SpriteBatch batch;
-    private GlyphLayout text;
 
-    private TextButton btnPlay, btnOptions, btnExit;
+    private ShapeRenderer renderer;
+    private Array<ru.geekbrains.stargame.animations.Star3D> stars;
+    private float speed = 20f;
+    private int numberOfStars = 500;
 
     public MainScreen(StarGame game) {
         this.game = game;
@@ -47,9 +51,18 @@ public class MainScreen extends ScreenAdapter {
                 new OrthographicCamera())
         );
 
+        renderer = new ShapeRenderer();
+        stars = new Array<>();
+        for (int i = 0; i < numberOfStars; i++) {
+            stars.add(new ru.geekbrains.stargame.animations.Star3D());
+        }
+
+        Image background =
+                new Image((Texture) game.getAssetManager().get("starField.jpg"));
+
         batch = new SpriteBatch();
         font = game.getAssetManager().get("space_font.fnt");
-        text = new GlyphLayout();
+        //stage.addActor(background);
         btnSetUp();
         Gdx.input.setInputProcessor(stage);
     }
@@ -69,6 +82,13 @@ public class MainScreen extends ScreenAdapter {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        renderer.begin(ShapeRenderer.ShapeType.Filled);
+        for (ru.geekbrains.stargame.animations.Star3D star : stars) {
+            star.update(speed);
+            star.draw(renderer);
+        }
+        renderer.end();
+
         stage.act(delta);
         stage.draw();
 
@@ -83,36 +103,74 @@ public class MainScreen extends ScreenAdapter {
 
     private void btnSetUp() {
 
+        Table mainMenu = new Table();
+
         TextButton.TextButtonStyle ttbs = new TextButton.TextButtonStyle();
         ttbs.font = font;
 
-        btnPlay = new TextButton("Play", ttbs);
-        btnOptions = new TextButton("Options", ttbs);
-        btnExit = new TextButton("Exit", ttbs);
+        TextButton btnPlay = new TextButton("Play", ttbs);
+        TextButton btnOptions = new TextButton("Options", ttbs);
+        TextButton btnExit = new TextButton("Exit", ttbs);
+        TextButton homeWork = new TextButton("HomeWork", ttbs);
 
-        btnPlay.setPosition(
-                StarGame.WORLD_WIDTH / 2 - btnPlay.getWidth() / 2,
-                StarGame.WORLD_HEIGHT / 2 - btnPlay.getHeight() /2
-        );
+        addBtnListeners(btnPlay, btnOptions, btnExit, homeWork);
 
-        btnOptions.setPosition(
-                btnPlay.getWidth() / 2 - btnOptions.getWidth() / 2,
-                //btnPlay.getX(),
-                btnPlay.getY() - btnOptions.getHeight()
-//                StarGame.WORLD_WIDTH / 2 - btnPlay.getWidth() / 2,
-//                StarGame.WORLD_HEIGHT / 2 - btnPlay.getHeight() /2
-        );
+        mainMenu.add(btnPlay);
+        mainMenu.row();
+        mainMenu.add(btnOptions);
+        mainMenu.row();
+        mainMenu.add(btnExit);
+        mainMenu.row();
+        mainMenu.add(homeWork);
+        mainMenu.row();
+        mainMenu.setFillParent(true);
+        stage.addActor(mainMenu);
+    }
 
-        btnPlay.addListener(new ClickListener() {
+    private void addBtnListeners(TextButton... t) {
+        t[0].addListener(new ClickListener() {
             @Override
             public void touchUp(
                     InputEvent e, float x, float y, int pointer, int button
             ) {
-                game.setScreen(game.getScreenType(StarGame.ScreenType.GAME_SCREEN));
+
+                stage.getRoot().addAction(Actions.sequence(
+                        Actions.fadeIn(0.3f),
+                        Actions.fadeOut(0.3f),
+                        Actions.run(() -> game.setScreen(game.getScreenType(
+                                        StarGame.ScreenType.GAME_SCREEN)
+                                )
+                        )
+                ));
             }
         });
 
-        stage.addActor(btnPlay);
-        stage.addActor(btnOptions);
+        t[1].addListener(new ClickListener() {
+            @Override
+            public void touchUp(
+                    InputEvent e, float x, float y, int pointer, int button
+            ) {
+                // TODO OptionsScreen
+            }
+        });
+
+        t[2].addListener(new ClickListener() {
+            @Override
+            public void touchUp(
+                    InputEvent e, float x, float y, int pointer, int button
+            ) {
+                Gdx.app.exit();
+            }
+        });
+
+        t[3].addListener(new ClickListener() {
+            @Override
+            public void touchUp(
+                    InputEvent e, float x, float y, int pointer, int button
+            ) {
+                // TODO homeWork screen
+            }
+        });
+
     }
 }

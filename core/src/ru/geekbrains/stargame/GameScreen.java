@@ -1,7 +1,6 @@
 package ru.geekbrains.stargame;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
@@ -10,18 +9,12 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.DelayedRemovalArray;
-import com.badlogic.gdx.utils.Logger;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
-
-import java.util.Iterator;
 
 /**
  * Created by
@@ -33,55 +26,51 @@ import java.util.Iterator;
 
 public class GameScreen extends ScreenAdapter {
     private OrthographicCamera camera;
-    private Viewport viewport;
+    private Stage stage;
     private SpriteBatch batch;
-    private StarGame starGame;
+    private StarGame game;
     private TextureAtlas atlas;
 
     private BitmapFont font;
     private GlyphLayout text;
 
-    private Background background;
+    private ru.geekbrains.stargame.animations.Background background;
 
     private Player player;
 
     private DelayedRemovalArray<Enemy> enemies;
 
-    public GameScreen(StarGame starGame) {
-        this.starGame = starGame;
+    public GameScreen(StarGame game) {
+        this.game = game;
 
     }
 
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        viewport.update(width, height, true);
+        stage.getViewport().update(width, height, true);
     }
 
     public void show() {
         super.show();
         camera = new OrthographicCamera();
-        viewport = new FitViewport(
+        stage = new Stage(new FitViewport(
                 StarGame.WORLD_WIDTH,
                 StarGame.WORLD_HEIGHT,
-                camera
-        );
-        viewport.apply(true);
-
-        camera.position.set(
-                viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0
+                new OrthographicCamera())
         );
 
         batch = new SpriteBatch();
 
         text = new GlyphLayout();
 
-        font = starGame.getAssetManager().get("space_font.fnt");
-        atlas = starGame.getAssetManager().get("assets.atlas");
+        font = game.getAssetManager().get("space_font.fnt");
+        atlas = game.getAssetManager().get("assets.atlas");
 
         setUpSound();
 
-        background = new Background(atlas);
+        background = new ru.geekbrains.stargame.animations.Background(atlas);
+
         player = new Player(atlas);
         enemies = new DelayedRemovalArray<Enemy>();
         enemies.add(new Enemy(atlas));
@@ -94,7 +83,7 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private Music getMusic() {
-        return starGame
+        return game
                 .getAssetManager()
                 .get("through_space.ogg", Music.class);
     }
@@ -104,7 +93,8 @@ public class GameScreen extends ScreenAdapter {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        batch.setProjectionMatrix(camera.combined);
+        stage.getViewport().getCamera().update();
+        batch.setProjectionMatrix(stage.getViewport().getCamera().combined);
 
         stopLeavingTheScreen();
 

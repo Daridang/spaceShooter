@@ -52,6 +52,8 @@ public class LoadingScreen extends ScreenAdapter {
 
 
         game.getAssetManager().load("assets.atlas", TextureAtlas.class);
+        game.getAssetManager().load("lightning.atlas", TextureAtlas.class);
+        game.getAssetManager().load("starField.jpg", Texture.class);
 
         BitmapFontLoader.BitmapFontParameter bfp =
                 new BitmapFontLoader.BitmapFontParameter();
