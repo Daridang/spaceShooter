@@ -1,0 +1,145 @@
+lightning.png
+size: 56, 1300
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+lighteningball
+  rotate: false
+  xy: 0, 0
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 1
+lighteningball
+  rotate: false
+  xy: 0, 65
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 2
+lighteningball
+  rotate: false
+  xy: 0, 130
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 3
+lighteningball
+  rotate: false
+  xy: 0, 195
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 4
+lighteningball
+  rotate: false
+  xy: 0, 260
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 5
+lighteningball
+  rotate: false
+  xy: 0, 325
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 6
+lighteningball
+  rotate: false
+  xy: 0, 390
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 7
+lighteningball
+  rotate: false
+  xy: 0, 455
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 8
+lighteningball
+  rotate: false
+  xy: 0, 520
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 9
+lighteningball
+  rotate: false
+  xy: 0, 585
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 10
+lighteningball
+  rotate: false
+  xy: 0, 650
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 11
+lighteningball
+  rotate: false
+  xy: 0, 715
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 12
+lighteningball
+  rotate: false
+  xy: 0, 780
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 13
+lighteningball
+  rotate: false
+  xy: 0, 845
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 14
+lighteningball
+  rotate: false
+  xy: 0, 910
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 15
+lighteningball
+  rotate: false
+  xy: 0, 975
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 16
+lighteningball
+  rotate: false
+  xy: 0, 1040
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 17
+lighteningball
+  rotate: false
+  xy: 0, 1105
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 18
+lighteningball
+  rotate: false
+  xy: 0, 1170
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 19
+lighteningball
+  rotate: false
+  xy: 0, 1235
+  size: 56, 65
+  orig: 56, 65
+  offset: 0, 0
+  index: 20

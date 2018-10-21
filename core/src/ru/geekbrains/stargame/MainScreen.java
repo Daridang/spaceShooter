@@ -18,6 +18,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
+import ru.geekbrains.stargame.animations.Star3D;
+
 /**
  * Created by
  * +-+-+-+-+-+-+-+-+
@@ -34,7 +36,7 @@ public class MainScreen extends ScreenAdapter {
     private SpriteBatch batch;
 
     private ShapeRenderer renderer;
-    private Array<ru.geekbrains.stargame.animations.Star3D> stars;
+    private Array<Star3D> stars;
     private float speed = 20f;
     private int numberOfStars = 500;
 
@@ -52,17 +54,13 @@ public class MainScreen extends ScreenAdapter {
         );
 
         renderer = new ShapeRenderer();
-        stars = new Array<>();
+        stars = new Array<Star3D>();
         for (int i = 0; i < numberOfStars; i++) {
             stars.add(new ru.geekbrains.stargame.animations.Star3D());
         }
 
-        Image background =
-                new Image((Texture) game.getAssetManager().get("starField.jpg"));
-
         batch = new SpriteBatch();
         font = game.getAssetManager().get("space_font.fnt");
-        //stage.addActor(background);
         btnSetUp();
         Gdx.input.setInputProcessor(stage);
     }
@@ -83,7 +81,7 @@ public class MainScreen extends ScreenAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         renderer.begin(ShapeRenderer.ShapeType.Filled);
-        for (ru.geekbrains.stargame.animations.Star3D star : stars) {
+        for (Star3D star : stars) {
             star.update(speed);
             star.draw(renderer);
         }
@@ -111,17 +109,14 @@ public class MainScreen extends ScreenAdapter {
         TextButton btnPlay = new TextButton("Play", ttbs);
         TextButton btnOptions = new TextButton("Options", ttbs);
         TextButton btnExit = new TextButton("Exit", ttbs);
-        TextButton homeWork = new TextButton("HomeWork", ttbs);
 
-        addBtnListeners(btnPlay, btnOptions, btnExit, homeWork);
+        addBtnListeners(btnPlay, btnOptions, btnExit);
 
         mainMenu.add(btnPlay);
         mainMenu.row();
         mainMenu.add(btnOptions);
         mainMenu.row();
         mainMenu.add(btnExit);
-        mainMenu.row();
-        mainMenu.add(homeWork);
         mainMenu.row();
         mainMenu.setFillParent(true);
         stage.addActor(mainMenu);
@@ -137,11 +132,15 @@ public class MainScreen extends ScreenAdapter {
                 stage.getRoot().addAction(Actions.sequence(
                         Actions.fadeIn(0.3f),
                         Actions.fadeOut(0.3f),
-                        Actions.run(() -> game.setScreen(game.getScreenType(
-                                        StarGame.ScreenType.GAME_SCREEN)
-                                )
+                        Actions.run(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            game.setScreen(game.getScreenType(
+                                                    StarGame.ScreenType.GAME_SCREEN));
+                                        }
+                                    })
                         )
-                ));
+                );
             }
         });
 
@@ -162,15 +161,5 @@ public class MainScreen extends ScreenAdapter {
                 Gdx.app.exit();
             }
         });
-
-        t[3].addListener(new ClickListener() {
-            @Override
-            public void touchUp(
-                    InputEvent e, float x, float y, int pointer, int button
-            ) {
-                // TODO homeWork screen
-            }
-        });
-
     }
 }
