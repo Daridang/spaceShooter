@@ -40,7 +40,10 @@ public class GameScreen extends ScreenAdapter {
     private TextureAtlas atlasLightning;
 
     private BitmapFont font;
-    private GlyphLayout text;
+    private GlyphLayout score;
+    private GlyphLayout scoreNr;
+    private GlyphLayout lives;
+    private GlyphLayout livesNr;
 
     private Background background;
 
@@ -68,18 +71,21 @@ public class GameScreen extends ScreenAdapter {
         stage = new Stage(new FitViewport(
                 StarGame.WORLD_WIDTH,
                 StarGame.WORLD_HEIGHT,
-                new OrthographicCamera())
+                camera)
         );
 
         batch = new SpriteBatch();
 
-        text = new GlyphLayout();
+        score = new GlyphLayout();
+        scoreNr = new GlyphLayout();
+        lives = new GlyphLayout();
+        livesNr = new GlyphLayout();
 
         font = game.getAssetManager().get("space_font.fnt");
         atlas = game.getAssetManager().get("assets.atlas");
         atlasLightning = game.getAssetManager().get("lightning.atlas");
 
-        //setUpSound();
+        setUpSound();
 
         background = new Background(atlas);
 
@@ -94,7 +100,7 @@ public class GameScreen extends ScreenAdapter {
 
     private void setUpSound() {
         getMusic().setLooping(true);
-        getMusic().setVolume(0.2f);
+        getMusic().setVolume(0.1f);
         getMusic().play();
     }
 
@@ -137,8 +143,16 @@ public class GameScreen extends ScreenAdapter {
         }
         lightning.end();
 
-        text.setText(font, "Space\tShooter");
-        font.draw(batch, text, StarGame.WORLD_WIDTH / 4, StarGame.WORLD_HEIGHT - 50);
+        // TODO HUD display class
+        score.setText(font, "Score");
+        lives.setText(font, "Lives");
+        scoreNr.setText(font, "0");
+        livesNr.setText(font, "3");
+
+        font.draw(batch, score, 10, StarGame.WORLD_HEIGHT - 10);
+        font.draw(batch, scoreNr, 10, StarGame.WORLD_HEIGHT - score.height * 1.5f);
+        font.draw(batch, lives, StarGame.WORLD_WIDTH - lives.width, StarGame.WORLD_HEIGHT - 10);
+        font.draw(batch, livesNr, StarGame.WORLD_WIDTH - livesNr.width, StarGame.WORLD_HEIGHT - lives.height * 1.5f);
         batch.end();
     }
 
@@ -154,7 +168,9 @@ public class GameScreen extends ScreenAdapter {
             lightningAnimation = new LightningAnimation(atlasLightning);
             lightningAnimation.setPosition(v);
 
-            lightning.add(lightningAnimation);
+            if (lightning.size == 0) {
+                lightning.add(lightningAnimation);
+            }
 
             player.setTargetPosition(v);
             player.setTargetSet(true);
@@ -181,22 +197,33 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void stopLeavingTheScreen() {
-        if (player.getPosition().y < 0) {
-            player.setPosition(new Vector2(player.getPosition().x, 0));
+        if (player.getPosition().y - player.getRegion().getRegionHeight() / 2 < 0) {
+            player.setPosition(new Vector2(
+                    player.getPosition().x, player.getRegion().getRegionWidth() / 2));
         }
-        if (player.getPosition().x < 0) {
-            player.setPosition(new Vector2(0, player.getPosition().y));
+
+        if (player.getPosition().x - player.getRegion().getRegionWidth() / 2 < 0) {
+            player.setPosition(new Vector2(
+                    player.getRegion().getRegionHeight() / 2, player.getPosition().y));
         }
 
         if (player.getPosition().x + player.getRegion()
-                .getRegionWidth() > StarGame.WORLD_WIDTH) {
+                .getRegionWidth() / 2 > StarGame.WORLD_WIDTH) {
             player.setPosition(new Vector2(
-                            StarGame.WORLD_WIDTH - player.getRegion().getRegionHeight(),
+                            StarGame.WORLD_WIDTH - player.getRegion().getRegionHeight() / 2,
                             player.getPosition().y
                     )
             );
         }
 
+        if (player.getPosition().y + player.getRegion()
+                .getRegionHeight() / 2 > StarGame.WORLD_HEIGHT) {
+            player.setPosition(new Vector2(
+                            player.getPosition().x,
+                            StarGame.WORLD_HEIGHT - player.getRegion().getRegionHeight() / 2
+                    )
+            );
+        }
     }
 
     @Override

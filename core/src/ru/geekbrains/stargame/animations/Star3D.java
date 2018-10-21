@@ -25,7 +25,7 @@ public class Star3D {
     private float velocity_min = 0.5f;
     private float velocity_max = 5f;
 
-    private float maxRadius = 5f;
+    private float maxRadius = 3f;
 
     public Star3D() {
         position = new Vector3();

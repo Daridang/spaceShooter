@@ -12,9 +12,11 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
@@ -106,12 +108,21 @@ public class MainScreen extends ScreenAdapter {
         TextButton.TextButtonStyle ttbs = new TextButton.TextButtonStyle();
         ttbs.font = font;
 
+        Label.LabelStyle lls = new Label.LabelStyle();
+        lls.font = font;
+
+        Label title = new Label("Space\tShooter", lls);
+        title.setAlignment(Align.top);
+        title.setFontScale(1.4f);
+
         TextButton btnPlay = new TextButton("Play", ttbs);
         TextButton btnOptions = new TextButton("Options", ttbs);
         TextButton btnExit = new TextButton("Exit", ttbs);
 
         addBtnListeners(btnPlay, btnOptions, btnExit);
 
+        mainMenu.add(title).padBottom(StarGame.WORLD_HEIGHT / 6);
+        mainMenu.row();
         mainMenu.add(btnPlay);
         mainMenu.row();
         mainMenu.add(btnOptions);

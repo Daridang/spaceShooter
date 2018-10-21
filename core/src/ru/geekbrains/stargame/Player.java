@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import ru.geekbrains.stargame.animations.PlayerAnimation;
@@ -39,6 +38,14 @@ public class Player {
             region = animation.getAnimationRight().getKeyFrame(delta);
             flyRight(delta);
 
+        }  else if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            region = animation.getIdle().first();
+            flyUp(delta);
+
+        } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            region = animation.getIdle().first();
+            flyDown(delta);
+
         } else if (isTargetSet) {
             region = animation.getIdle().first();
             goToTheTarget(delta);
@@ -61,15 +68,13 @@ public class Player {
     private void goToTheTarget(float delta) {
 
         float distance = targetPosition.dst(position);
+        // TODO find angle for proper texture direction
+//        angle = (float) Math.acos(targetPosition.cpy().nor().dot(position.cpy().nor())) * MathUtils.radiansToDegrees;
+        System.out.println(angle);
 
-        Vector2 v1 = new Vector2(targetPosition);
-        v1.nor();
-        v1.scl(speed * delta);
-        position.add(v1);
+        position.add(targetPosition.cpy().sub(position.cpy()).nor().scl(delta * speed));
 
-        System.out.println("pos: " + position + "\n" + "trg: " + targetPosition);
-
-        if (distance < 20) {
+        if (distance < 1) {
             isTargetSet = false;
         }
     }
@@ -83,6 +88,15 @@ public class Player {
         animation.getAnimationRight().getKeyFrame(delta);
         position.x += delta * speed;
     }
+
+    private void flyUp(float delta) {
+        position.y += delta * speed;
+    }
+
+    private void flyDown(float delta) {
+        position.y -= delta * speed;
+    }
+
 
     public Vector2 getPosition() {
         return position;
