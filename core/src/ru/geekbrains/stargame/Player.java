@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 
 import ru.geekbrains.stargame.animations.PlayerAnimation;
@@ -68,8 +69,9 @@ public class Player {
     private void goToTheTarget(float delta) {
 
         float distance = targetPosition.dst(position);
-        // TODO find angle for proper texture direction
-//        angle = (float) Math.acos(targetPosition.cpy().nor().dot(position.cpy().nor())) * MathUtils.radiansToDegrees;
+
+        Vector2 d = targetPosition.cpy().sub(position.cpy()).nor();
+        angle = d.angle() - 90;
         System.out.println(angle);
 
         position.add(targetPosition.cpy().sub(position.cpy()).nor().scl(delta * speed));
