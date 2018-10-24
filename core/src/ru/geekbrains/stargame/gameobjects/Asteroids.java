@@ -1,6 +1,5 @@
-package ru.geekbrains.stargame;
+package ru.geekbrains.stargame.gameobjects;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -10,47 +9,52 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.Random;
 
+import ru.geekbrains.stargame.StarGame;
+
 /**
  * Created by
  * +-+-+-+-+-+-+-+-+
  * |D|a|r|i|d|a|n|g|
  * +-+-+-+-+-+-+-+-+
- * on 19/10/2018.
+ * on 22/10/2018.
  */
 
-public class Enemy {
-
+public class Asteroids {
     private Vector2 position;
     private TextureRegion region;
     private Random random;
     private float speed;
     private boolean isOutOfScreen = false;
     private long spawnTime;
+    private float angle;
 
-    public Enemy(TextureAtlas atlas) {
-        region = atlas.findRegion("stateczek");
+    public Asteroids(TextureAtlas atlas) {
+        region = atlas.findRegion("Asteroids_64x64");
         spawnTime = TimeUtils.millis();
-
-        // ??? every 2nd is not flipped ???
-        region.flip(false, true);
-        if (!region.isFlipY()) {
-            region.flip(false, true);
-        }
 
         random = new Random();
         position = new Vector2(
                 random.nextInt((int) StarGame.WORLD_WIDTH - region.getRegionWidth()),
                 StarGame.WORLD_HEIGHT * 2);
-        speed = MathUtils.random(100f, 300f);
+        speed = MathUtils.random(50f, 150f);
+        angle = MathUtils.random(0f, 360f);
     }
 
     public void render(SpriteBatch batch, float delta) {
+        angle += speed * delta;
         position.y -= speed * delta;
         if (position.y + region.getRegionHeight() * 2 < 0) {
             isOutOfScreen = true;
         }
-        batch.draw(region, position.x, position.y);
-        //Gdx.app.log("TAG", String.valueOf(isOutOfScreen));
+        batch.draw(
+                region,
+                position.x,
+                position.y,
+                region.getRegionWidth() / 2, region.getRegionHeight() / 2,
+                region.getRegionWidth(), region.getRegionHeight(),
+                1f, 1f, angle
+        );
+        //batch.draw(region, position.x, position.y);
     }
 
     public Vector2 getPosition() {
@@ -80,5 +84,4 @@ public class Enemy {
     public long getSpawnTime() {
         return spawnTime;
     }
-
 }

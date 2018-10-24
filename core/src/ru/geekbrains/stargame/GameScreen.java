@@ -1,27 +1,25 @@
 package ru.geekbrains.stargame;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.DelayedRemovalArray;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import ru.geekbrains.stargame.animations.Background;
 import ru.geekbrains.stargame.animations.LightningAnimation;
+import ru.geekbrains.stargame.screens.Base2DScreen;
+import ru.geekbrains.stargame.gameobjects.*;
 
 /**
  * Created by
@@ -31,13 +29,12 @@ import ru.geekbrains.stargame.animations.LightningAnimation;
  * on 16/10/2018.
  */
 
-public class GameScreen extends ScreenAdapter {
+public class GameScreen extends Base2DScreen {
     private OrthographicCamera camera;
     private Stage stage;
     private SpriteBatch batch;
     private StarGame game;
     private TextureAtlas atlas;
-    private TextureAtlas atlasLightning;
 
     private BitmapFont font;
     private GlyphLayout score;
@@ -50,9 +47,12 @@ public class GameScreen extends ScreenAdapter {
     private Player player;
 
     private DelayedRemovalArray<Enemy> enemies;
+    private DelayedRemovalArray<Asteroids> asteroids;
     private DelayedRemovalArray<LightningAnimation> lightning;
 
     private LightningAnimation lightningAnimation;
+
+    private ShapeRenderer r;
 
     public GameScreen(StarGame game) {
         this.game = game;
@@ -82,20 +82,21 @@ public class GameScreen extends ScreenAdapter {
         livesNr = new GlyphLayout();
 
         font = game.getAssetManager().get("space_font.fnt");
-        atlas = game.getAssetManager().get("assets.atlas");
-        atlasLightning = game.getAssetManager().get("lightning.atlas");
+        atlas = game.getAssetManager().get("texture_asset.atlas");
 
-        setUpSound();
+        //setUpSound();
 
         background = new Background(atlas);
 
         player = new Player(atlas);
         enemies = new DelayedRemovalArray<Enemy>();
+        asteroids = new DelayedRemovalArray<Asteroids>();
         enemies.add(new Enemy(atlas));
+        asteroids.add(new Asteroids(atlas));
 
         lightning = new DelayedRemovalArray<LightningAnimation>();
 
-        Gdx.input.setInputProcessor(stage);
+        r = new ShapeRenderer();
     }
 
     private void setUpSound() {
@@ -124,7 +125,6 @@ public class GameScreen extends ScreenAdapter {
         // прорисовка текстур здесь
         background.render(delta, batch);
         player.render(batch, delta);
-        updateMovement();
 
         enemies.begin();
         randomEnemySpawn();
@@ -133,6 +133,14 @@ public class GameScreen extends ScreenAdapter {
         }
         removeEnemy();
         enemies.end();
+
+        asteroids.begin();
+        randomAsteroidsSpawn();
+        for (Asteroids a : asteroids) {
+            a.render(batch, delta);
+        }
+        removeAsteroid();
+        asteroids.end();
 
         lightning.begin();
         for (LightningAnimation a : lightning) {
@@ -154,27 +162,50 @@ public class GameScreen extends ScreenAdapter {
         font.draw(batch, lives, StarGame.WORLD_WIDTH - lives.width, StarGame.WORLD_HEIGHT - 10);
         font.draw(batch, livesNr, StarGame.WORLD_WIDTH - livesNr.width, StarGame.WORLD_HEIGHT - lives.height * 1.5f);
         batch.end();
+
+
+        r.begin(ShapeRenderer.ShapeType.Line);
+        r.rect(
+                player.getHitBox().x,
+                player.getHitBox().y,
+                player.getHitBox().width,
+                player.getHitBox().height
+        );
+
+        System.out.println(player.getHitBox().width);
+        System.out.println(player.getHitBox().x);
+
+//        for (Enemy e : enemies) {
+//            r.rect(
+//                    e.getHitBox().x,
+//                    e.getHitBox().y,
+//                    e.getHitBox().width,
+//                    e.getHitBox().height
+//            );
+//        }
+
+
+        r.end();
+
     }
 
-    private void updateMovement() {
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        Vector2 v = stage.getViewport().unproject(new Vector2(
+                screenX,
+                screenY)
+        );
 
-        if (Gdx.input.isTouched()) {
+        lightningAnimation = new LightningAnimation(atlas);
+        lightningAnimation.setPosition(v);
 
-            Vector2 v = stage.getViewport().unproject(new Vector2(
-                    Gdx.input.getX(),
-                    Gdx.input.getY())
-            );
-
-            lightningAnimation = new LightningAnimation(atlasLightning);
-            lightningAnimation.setPosition(v);
-
-            if (lightning.size == 0) {
-                lightning.add(lightningAnimation);
-            }
-
-            player.setTargetPosition(v);
-            player.setTargetSet(true);
+        if (lightning.size == 0) {
+            lightning.add(lightningAnimation);
         }
+
+        player.setTargetPosition(v);
+        player.setTargetSet(true);
+        return super.touchDown(screenX, screenY, pointer, button);
     }
 
     private float spawnDelta = MathUtils.random(1000f, 5000f);
@@ -188,6 +219,15 @@ public class GameScreen extends ScreenAdapter {
         }
     }
 
+    private void randomAsteroidsSpawn() {
+        long currentTime = TimeUtils.millis();
+
+        if (currentTime - asteroids.peek().getSpawnTime() > spawnDelta) {
+
+            asteroids.add(new Asteroids(atlas));
+        }
+    }
+
     private void removeEnemy() {
         for (int i = 0; i < enemies.size; i++) {
             if (enemies.get(i).isOutOfScreen()) {
@@ -196,32 +236,63 @@ public class GameScreen extends ScreenAdapter {
         }
     }
 
+    private void removeAsteroid() {
+        for (int i = 0; i < asteroids.size; i++) {
+            if (asteroids.get(i).isOutOfScreen()) {
+                asteroids.removeIndex(i);
+            }
+        }
+    }
+
     private void stopLeavingTheScreen() {
-        if (player.getPosition().y - player.getRegion().getRegionHeight() / 2 < 0) {
-            player.setPosition(new Vector2(
-                    player.getPosition().x, player.getRegion().getRegionWidth() / 2));
-        }
-
-        if (player.getPosition().x - player.getRegion().getRegionWidth() / 2 < 0) {
-            player.setPosition(new Vector2(
-                    player.getRegion().getRegionHeight() / 2, player.getPosition().y));
-        }
-
-        if (player.getPosition().x + player.getRegion()
-                .getRegionWidth() / 2 > StarGame.WORLD_WIDTH) {
-            player.setPosition(new Vector2(
-                            StarGame.WORLD_WIDTH - player.getRegion().getRegionHeight() / 2,
-                            player.getPosition().y
-                    )
+//        if (player.getPosition().y - player.getRegion().getRegionHeight() / 2 < 0) {
+//            player.setPosition(new Vector2(
+//                    player.getPosition().x, player.getRegion().getRegionWidth() / 2));
+//        }
+        if (player.getPosition().y < 0) {
+            player.setPosition(
+                    new Vector2(player.getPosition().x, StarGame.WORLD_HEIGHT)
             );
         }
 
-        if (player.getPosition().y + player.getRegion()
-                .getRegionHeight() / 2 > StarGame.WORLD_HEIGHT) {
-            player.setPosition(new Vector2(
-                            player.getPosition().x,
-                            StarGame.WORLD_HEIGHT - player.getRegion().getRegionHeight() / 2
-                    )
+//        if (player.getPosition().x - player.getRegion().getRegionWidth() / 2 < 0) {
+//            player.setPosition(new Vector2(
+//                    player.getRegion().getRegionHeight() / 2, player.getPosition().y));
+//        }
+
+        if (player.getPosition().x < 0) {
+            player.setPosition(
+                    new Vector2(StarGame.WORLD_WIDTH, player.getPosition().y)
+            );
+        }
+
+//        if (player.getPosition().x + player.getRegion()
+//                .getRegionWidth() / 2 > StarGame.WORLD_WIDTH) {
+//            player.setPosition(new Vector2(
+//                            StarGame.WORLD_WIDTH - player.getRegion().getRegionHeight() / 2,
+//                            player.getPosition().y
+//                    )
+//            );
+//        }
+
+        if (player.getPosition().x > StarGame.WORLD_WIDTH) {
+            player.setPosition(
+                    new Vector2(0, player.getPosition().y)
+            );
+        }
+
+//        if (player.getPosition().y + player.getRegion()
+//                .getRegionHeight() / 2 > StarGame.WORLD_HEIGHT) {
+//            player.setPosition(new Vector2(
+//                            player.getPosition().x,
+//                            StarGame.WORLD_HEIGHT - player.getRegion().getRegionHeight() / 2
+//                    )
+//            );
+//        }
+
+        if (player.getPosition().y > StarGame.WORLD_HEIGHT) {
+            player.setPosition(
+                    new Vector2(player.getPosition().x, 0)
             );
         }
     }

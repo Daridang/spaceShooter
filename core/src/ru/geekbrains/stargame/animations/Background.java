@@ -20,7 +20,7 @@ public class Background {
 
     public Background(TextureAtlas atlas) {
 
-        back = atlas.findRegion("space_bck4");
+        back = atlas.findRegion("space_background");
         y1 = 0;
         y2 = back.getRegionHeight();
     }

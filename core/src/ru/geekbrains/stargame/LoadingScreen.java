@@ -50,12 +50,11 @@ public class LoadingScreen extends ScreenAdapter {
         viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         renderer = new ShapeRenderer();
 
-
-        game.getAssetManager().load("assets.atlas", TextureAtlas.class);
-        game.getAssetManager().load("lightning.atlas", TextureAtlas.class);
+        game.getAssetManager().load("texture_asset.atlas", TextureAtlas.class);
 
         BitmapFontLoader.BitmapFontParameter bfp =
                 new BitmapFontLoader.BitmapFontParameter();
+        bfp.atlasName = "texture_asset.atlas";
 
         game.getAssetManager().load("space_font.fnt", BitmapFont.class, bfp);
         game.getAssetManager().load("through_space.ogg", Music.class);

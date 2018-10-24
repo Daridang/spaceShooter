@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import ru.geekbrains.stargame.animations.Star3D;
+import ru.geekbrains.stargame.screens.Base2DScreen;
 
 /**
  * Created by
@@ -30,7 +31,7 @@ import ru.geekbrains.stargame.animations.Star3D;
  * on 19/10/2018.
  */
 
-public class MainScreen extends ScreenAdapter {
+public class MainScreen extends Base2DScreen {
 
     private StarGame game;
     private Stage stage;
