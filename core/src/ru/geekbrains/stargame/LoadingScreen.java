@@ -75,7 +75,8 @@ public class LoadingScreen extends ScreenAdapter {
 
     private void update() {
         if (game.getAssetManager().update()) {
-            game.setScreen(game.getScreenType(StarGame.ScreenType.MAIN_SCREEN));
+            //game.setScreen(game.getScreenType(StarGame.ScreenType.MAIN_SCREEN));
+            game.setScreen(new HM());
         } else {
             progress = game.getAssetManager().getProgress();
         }

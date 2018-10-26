@@ -3,6 +3,7 @@ package ru.geekbrains.stargame.gameobjects;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
@@ -27,6 +28,7 @@ public class Asteroids {
     private boolean isOutOfScreen = false;
     private long spawnTime;
     private float angle;
+    private Circle hitBox;
 
     public Asteroids(TextureAtlas atlas) {
         region = atlas.findRegion("Asteroids_64x64");
@@ -38,6 +40,18 @@ public class Asteroids {
                 StarGame.WORLD_HEIGHT * 2);
         speed = MathUtils.random(50f, 150f);
         angle = MathUtils.random(0f, 360f);
+        hitBox = new Circle(
+                position.x + region.getRegionHeight()/2,
+                position.y + region.getRegionHeight()/2,
+                region.getRegionHeight()/2
+        );
+    }
+
+    private void update() {
+        hitBox.setPosition(
+                position.x + region.getRegionHeight()/2,
+                position.y + region.getRegionHeight()/2
+        );
     }
 
     public void render(SpriteBatch batch, float delta) {
@@ -55,6 +69,7 @@ public class Asteroids {
                 1f, 1f, angle
         );
         //batch.draw(region, position.x, position.y);
+        update();
     }
 
     public Vector2 getPosition() {
@@ -84,4 +99,13 @@ public class Asteroids {
     public long getSpawnTime() {
         return spawnTime;
     }
+
+    public Circle getHitBox() {
+        return hitBox;
+    }
+
+    public void setHitBox(Circle hitBox) {
+        this.hitBox = hitBox;
+    }
+
 }

@@ -55,10 +55,7 @@ public class Enemy {
     }
 
     private void update() {
-        hitBox.setPosition(
-                position.x,
-                position.y
-        );
+        hitBox.setPosition(position);
     }
 
     public void render(SpriteBatch batch, float delta) {
@@ -67,7 +64,7 @@ public class Enemy {
             isOutOfScreen = true;
         }
         batch.draw(region, position.x, position.y);
-        //update();
+        update();
         //Gdx.app.log("TAG", String.valueOf(isOutOfScreen));
     }
 

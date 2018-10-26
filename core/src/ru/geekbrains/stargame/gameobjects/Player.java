@@ -7,69 +7,100 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import ru.geekbrains.stargame.StarGame;
 import ru.geekbrains.stargame.animations.PlayerAnimation;
 
 import static com.badlogic.gdx.Gdx.app;
-import static com.badlogic.gdx.math.MathUtils.PI;
 import static com.badlogic.gdx.math.MathUtils.cos;
 import static com.badlogic.gdx.math.MathUtils.sin;
 
 
 public class Player {
+    public static final float WIDTH = 80f;
+    public static final float HEIGHT = 80f;
     private PlayerAnimation animation;
     private TextureRegion region;
     private Vector2 position;
+    private Vector2 velocity;
     private float lowEnginePower = 50f;
     private float enginePower = 200f;
     private float maxEnginePower = 300f;
     private float rotationSpeed = 200f;
     private Vector2 targetPosition;
     private boolean isTargetSet = false;
+    private boolean isAlive = true;
     private float angle = 0f;
 
     private Rectangle hitBox;
+    private Circle hitCircle;
 
     public Player(TextureAtlas atlas) {
         animation = new PlayerAnimation(atlas);
         region = animation.getIdle().first();
+        velocity = new Vector2();
         position = new Vector2(
-                StarGame.WORLD_WIDTH / 2 - region.getRegionWidth() / 2,
-                region.getRegionHeight() / 2 + 100f
+                StarGame.WORLD_WIDTH / 2 - WIDTH / 2,
+                HEIGHT / 2 + 100f
         );
         targetPosition = new Vector2();
         hitBox = new Rectangle(
-                position.x,
-                position.y,
-                80f,
-                80f
+                position.x - WIDTH / 2,
+                position.y - HEIGHT / 2,
+                WIDTH,
+                HEIGHT
         );
-        System.out.println(position);
-        System.out.println(hitBox);
+        hitCircle = new Circle(position, WIDTH / 2);
     }
 
     private void update() {
         hitBox.set(
-                position.x,
-                position.y,
-                region.getRegionWidth(),
-                region.getRegionHeight()
+                position.x - WIDTH / 2,
+                position.y - HEIGHT / 2,
+                WIDTH,
+                HEIGHT
         );
+        hitCircle.setPosition(position);
     }
 
+    // Метод, который занимается выстреливанием пули
+    public void fire() {
+        Bullet[] bl = BulletEmitter.getInstance().bullets;
+        for (Bullet o : bl) {
+            if (!o.active) {
+                o.setup(
+                        position.x,
+                        position.y,
+                        400 * MathUtils.cosDeg(90),
+                        400 * MathUtils.sinDeg(90)
+                );
+                break;
+            }
+        }
+    }
 
     public void render(SpriteBatch batch, float delta) {
         //updateMovement(delta);
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+            fire();
+        }
 
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             flyLeft(delta);
 
         } else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             flyRight(delta);
+//            angle += rotationSpeed * delta;
+//            if (angle >= 360){
+//                angle = 0;
+//            }
+//            System.out.println("angle: " + angle);
+//            System.out.println("direction: " + position.cpy().nor());
 
         } else if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
             flyUp(delta);
@@ -94,8 +125,6 @@ public class Player {
                 region.getRegionWidth(), region.getRegionHeight(),
                 1f, 1f, angle
         );
-        Vector2 d = position.cpy().nor();
-        //System.out.println(d);
     }
 
 //    // Если угол до точки отличается от текущего угла корабля, стараемся развернуться в нужную сторону
@@ -163,9 +192,16 @@ public class Player {
         float distance = targetPosition.dst(position);
 
         Vector2 d = targetPosition.cpy().sub(position.cpy()).nor();
-        angle = d.angle() - 90;
+        //angle = d.angle();
 
-        position.add(targetPosition.cpy().sub(position.cpy()).nor().scl(delta * enginePower));
+        position.add(
+                targetPosition
+                        .cpy()
+                        .sub(position.cpy())
+                        .nor()
+                        .scl(delta * enginePower)
+        );
+        System.out.println(targetPosition.cpy().nor());
 
         if (distance < 1) {
             isTargetSet = false;
@@ -225,6 +261,10 @@ public class Player {
         return position;
     }
 
+    public Circle getHitCircle() {
+        return hitCircle;
+    }
+
     public void setPosition(Vector2 position) {
         this.position = position;
     }
@@ -257,5 +297,12 @@ public class Player {
         this.hitBox = hitBox;
     }
 
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    public void setAlive(boolean alive) {
+        isAlive = alive;
+    }
 
 }

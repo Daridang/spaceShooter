@@ -2,6 +2,7 @@ package ru.geekbrains.stargame.gameobjects;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.TimeUtils;
 
 /**
  * Created by
@@ -19,13 +20,14 @@ public class BulletEmitter {
     }
 
     Texture texture;
-    Bullet[] bullets;
+    public Bullet[] bullets;
 
     private BulletEmitter() {
         texture = new Texture("laser_beam.png");
         bullets = new Bullet[200];
         for (int i = 0; i < bullets.length; i++) {
             bullets[i] = new Bullet();
+            bullets[i].setHitBox(texture.getWidth(), texture.getHeight());
         }
     }
 

@@ -9,14 +9,19 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.DelayedRemovalArray;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import ru.geekbrains.stargame.animations.Background;
+import ru.geekbrains.stargame.animations.ExplosionAnimation;
 import ru.geekbrains.stargame.animations.LightningAnimation;
 import ru.geekbrains.stargame.screens.Base2DScreen;
 import ru.geekbrains.stargame.gameobjects.*;
@@ -32,7 +37,7 @@ import ru.geekbrains.stargame.gameobjects.*;
 public class GameScreen extends Base2DScreen {
     private OrthographicCamera camera;
     private Stage stage;
-    private SpriteBatch batch;
+    //private SpriteBatch batch;
     private StarGame game;
     private TextureAtlas atlas;
 
@@ -49,10 +54,15 @@ public class GameScreen extends Base2DScreen {
     private DelayedRemovalArray<Enemy> enemies;
     private DelayedRemovalArray<Asteroids> asteroids;
     private DelayedRemovalArray<LightningAnimation> lightning;
+    private DelayedRemovalArray<ExplosionAnimation> explosions;
 
     private LightningAnimation lightningAnimation;
 
     private ShapeRenderer r;
+    private StarGameHud hud;
+
+    private int pScore = 0;
+    private int pLives = 3;
 
     public GameScreen(StarGame game) {
         this.game = game;
@@ -84,6 +94,7 @@ public class GameScreen extends Base2DScreen {
         font = game.getAssetManager().get("space_font.fnt");
         atlas = game.getAssetManager().get("texture_asset.atlas");
 
+        hud = new StarGameHud(font);
         //setUpSound();
 
         background = new Background(atlas);
@@ -95,6 +106,7 @@ public class GameScreen extends Base2DScreen {
         asteroids.add(new Asteroids(atlas));
 
         lightning = new DelayedRemovalArray<LightningAnimation>();
+        explosions = new DelayedRemovalArray<ExplosionAnimation>();
 
         r = new ShapeRenderer();
     }
@@ -124,7 +136,9 @@ public class GameScreen extends Base2DScreen {
         batch.begin();
         // прорисовка текстур здесь
         background.render(delta, batch);
-        player.render(batch, delta);
+        if (player.isAlive()) {
+            player.render(batch, delta);
+        }
 
         enemies.begin();
         randomEnemySpawn();
@@ -142,6 +156,15 @@ public class GameScreen extends Base2DScreen {
         removeAsteroid();
         asteroids.end();
 
+        explosions.begin();
+        for (ExplosionAnimation a : explosions) {
+            a.render(batch, delta);
+            if (a.getExplosionAnim().isAnimationFinished(a.getElapsedTime())) {
+                explosions.removeValue(a, false);
+            }
+        }
+        explosions.end();
+
         lightning.begin();
         for (LightningAnimation a : lightning) {
             a.render(batch, delta);
@@ -151,19 +174,14 @@ public class GameScreen extends Base2DScreen {
         }
         lightning.end();
 
-        // TODO HUD display class
-        score.setText(font, "Score");
-        lives.setText(font, "Lives");
-        scoreNr.setText(font, "0");
-        livesNr.setText(font, "3");
+        BulletEmitter.getInstance().render(batch);
+        hud.render(batch, pLives, pScore);
 
-        font.draw(batch, score, 10, StarGame.WORLD_HEIGHT - 10);
-        font.draw(batch, scoreNr, 10, StarGame.WORLD_HEIGHT - score.height * 1.5f);
-        font.draw(batch, lives, StarGame.WORLD_WIDTH - lives.width, StarGame.WORLD_HEIGHT - 10);
-        font.draw(batch, livesNr, StarGame.WORLD_WIDTH - livesNr.width, StarGame.WORLD_HEIGHT - lives.height * 1.5f);
         batch.end();
 
 
+        // Debug
+        r.setProjectionMatrix(camera.combined);
         r.begin(ShapeRenderer.ShapeType.Line);
         r.rect(
                 player.getHitBox().x,
@@ -171,22 +189,80 @@ public class GameScreen extends Base2DScreen {
                 player.getHitBox().width,
                 player.getHitBox().height
         );
+        r.circle(player.getHitCircle().x, player.getHitCircle().y, player.getHitCircle().radius);
 
-        System.out.println(player.getHitBox().width);
-        System.out.println(player.getHitBox().x);
+        for (Enemy e : enemies) {
+            r.rect(
+                    e.getHitBox().x,
+                    e.getHitBox().y,
+                    e.getHitBox().width,
+                    e.getHitBox().height
+            );
+        }
 
-//        for (Enemy e : enemies) {
-//            r.rect(
-//                    e.getHitBox().x,
-//                    e.getHitBox().y,
-//                    e.getHitBox().width,
-//                    e.getHitBox().height
-//            );
-//        }
 
+        for (Asteroids a : asteroids) {
+            r.circle(
+                    a.getHitBox().x,
+                    a.getHitBox().y,
+                    a.getHitBox().radius
+            );
+        }
 
         r.end();
+        BulletEmitter.getInstance().update(delta);
+        collisionDetection();
+    }
 
+    private void collisionDetection() {
+        for (Enemy e : enemies) {
+            if (e.getHitBox().overlaps(player.getHitBox()) && player.isAlive()) {
+                if (explosions.size == 0) {
+                    explosions.add(new ExplosionAnimation(atlas));
+                    explosions.get(0).setPosition(player.getPosition());
+                    player.setAlive(false);
+                    pLives--;
+                    if (pLives < 1) {
+                        // TODO game over screen
+                        pLives = 3;
+                    }
+                }
+            }
+            for (Bullet b : BulletEmitter.getInstance().bullets) {
+                if (b.active) {
+                    if (e.getHitBox().overlaps(b.getHitBox())) {
+                        e.setOutOfScreen(true);
+                        b.destroy();
+                        if (explosions.size == 0) {
+                            explosions.add(new ExplosionAnimation(atlas));
+                            explosions.get(0).setPosition(
+                                    new Vector2(
+                                            e.getPosition().x + e.getHitBox().width / 2,
+                                            e.getPosition().y + e.getHitBox().height / 2
+                                    )
+                            );
+                        }
+                        pScore++;
+                    }
+                }
+            }
+
+        }
+
+        for (Asteroids a : asteroids) {
+            if (a.getHitBox().overlaps(player.getHitCircle()) && player.isAlive()) {
+                if (explosions.size == 0) {
+                    explosions.add(new ExplosionAnimation(atlas));
+                    explosions.get(0).setPosition(player.getPosition());
+                    player.setAlive(false);
+                    pLives--;
+                    if (pLives < 1) {
+                        //game over screen
+                        pLives = 3;
+                    }
+                }
+            }
+        }
     }
 
     @Override

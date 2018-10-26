@@ -36,12 +36,15 @@ public class MainScreen extends Base2DScreen {
     private StarGame game;
     private Stage stage;
     private BitmapFont font;
-    private SpriteBatch batch;
+    //private SpriteBatch batch;
 
     private ShapeRenderer renderer;
     private Array<Star3D> stars;
     private float speed = 20f;
     private int numberOfStars = 500;
+
+    StarGameHud hud;
+    public boolean drawHud = false;
 
     public MainScreen(StarGame game) {
         this.game = game;
@@ -56,14 +59,17 @@ public class MainScreen extends Base2DScreen {
                 new OrthographicCamera())
         );
 
+        font = game.getAssetManager().get("space_font.fnt");
+
+        hud = new StarGameHud(font);
+
         renderer = new ShapeRenderer();
         stars = new Array<Star3D>();
         for (int i = 0; i < numberOfStars; i++) {
-            stars.add(new ru.geekbrains.stargame.animations.Star3D());
+            stars.add(new Star3D());
         }
 
         batch = new SpriteBatch();
-        font = game.getAssetManager().get("space_font.fnt");
         btnSetUp();
         Gdx.input.setInputProcessor(stage);
     }
@@ -92,7 +98,6 @@ public class MainScreen extends Base2DScreen {
 
         stage.act(delta);
         stage.draw();
-
     }
 
     @Override
@@ -142,8 +147,8 @@ public class MainScreen extends Base2DScreen {
             ) {
 
                 stage.getRoot().addAction(Actions.sequence(
-                        Actions.fadeIn(0.3f),
-                        Actions.fadeOut(0.3f),
+                        Actions.fadeIn(0.5f),
+                        Actions.fadeOut(0.5f),
                         Actions.run(new Runnable() {
                                         @Override
                                         public void run() {
