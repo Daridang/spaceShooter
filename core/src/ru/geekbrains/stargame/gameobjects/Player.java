@@ -27,6 +27,7 @@ public class Player {
     private PlayerAnimation animation;
     private TextureRegion region;
     private Vector2 position;
+    private Vector2 respawnPosition;
     private Vector2 velocity;
     private float lowEnginePower = 50f;
     private float enginePower = 200f;
@@ -36,6 +37,8 @@ public class Player {
     private boolean isTargetSet = false;
     private boolean isAlive = true;
     private float angle = 0f;
+
+    private int lives = 3;
 
     private Rectangle hitBox;
     private Circle hitCircle;
@@ -48,6 +51,8 @@ public class Player {
                 StarGame.WORLD_WIDTH / 2 - WIDTH / 2,
                 HEIGHT / 2 + 100f
         );
+        respawnPosition = new Vector2(StarGame.WORLD_WIDTH / 2 - WIDTH / 2,
+                HEIGHT / 2 + 100f);
         targetPosition = new Vector2();
         hitBox = new Rectangle(
                 position.x - WIDTH / 2,
@@ -71,9 +76,9 @@ public class Player {
     // Метод, который занимается выстреливанием пули
     public void fire() {
         Bullet[] bl = BulletEmitter.getInstance().bullets;
-        for (Bullet o : bl) {
-            if (!o.active) {
-                o.setup(
+        for (Bullet b : bl) {
+            if (!b.active) {
+                b.fireBullet(
                         position.x,
                         position.y,
                         400 * MathUtils.cosDeg(90),
@@ -256,6 +261,9 @@ public class Player {
         position.y -= delta * enginePower;
     }
 
+    public void respawn() {
+        position = respawnPosition.cpy();
+    }
 
     public Vector2 getPosition() {
         return position;
@@ -303,6 +311,14 @@ public class Player {
 
     public void setAlive(boolean alive) {
         isAlive = alive;
+    }
+
+    public int getLives() {
+        return lives;
+    }
+
+    public void setLives(int lives) {
+        this.lives += lives;
     }
 
 }

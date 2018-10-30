@@ -21,8 +21,8 @@ public class StarGameHud {
 
 
     public void render(SpriteBatch batch, int lives, int score) {
-        final String scoreStr = "Score" + score;
-        final String livesStr = "Lives" + lives;
+        final String scoreStr = "Score\n" + score;
+        final String livesStr = "Lives\n" + lives;
 
         font.draw(batch, scoreStr, 20, StarGame.WORLD_HEIGHT - 20);
         font.draw(batch, livesStr, StarGame.WORLD_WIDTH - 200, StarGame.WORLD_HEIGHT - 20);

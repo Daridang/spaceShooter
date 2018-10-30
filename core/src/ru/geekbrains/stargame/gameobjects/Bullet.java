@@ -1,11 +1,13 @@
 package ru.geekbrains.stargame.gameobjects;
 
 
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.TimeUtils;
-
-import java.sql.Time;
+import com.badlogic.gdx.utils.Pool;
 
 import ru.geekbrains.stargame.StarGame;
 
@@ -17,23 +19,49 @@ import ru.geekbrains.stargame.StarGame;
  * on 22/10/2018.
  */
 
-public class Bullet {
+public class Bullet implements Pool.Poolable{
     Vector2 position;
     Vector2 velocity;
     public boolean active;
     private Rectangle hitBox;
+    private AssetManager manager;
+    private Sprite bullet;
+
+    public Bullet(AssetManager manager) {
+        this.manager = manager;
+        this.position = new Vector2(0, 0);
+        this.velocity = new Vector2(0, 0);
+        this.active = false;
+        bullet = new Sprite(manager.get("laser_beam.png", Texture.class));
+        hitBox = new Rectangle(
+                position.x, position.y, bullet.getWidth(), bullet.getHeight()
+        );
+    }
 
     public Bullet() {
         this.position = new Vector2(0, 0);
         this.velocity = new Vector2(0, 0);
         this.active = false;
-        hitBox = new Rectangle();
+
+        hitBox = new Rectangle(
+                position.x, position.y, 16f, 32f
+        );
     }
 
-    public void setup(float x, float y, float vx, float vy) {
-        position.set(x, y);
-        velocity.set(vx, vy);
+    public void fireBullet(float xpos, float ypos, float xvel, float yvel){
+        position.set(xpos, ypos);
+        velocity.set(xvel, yvel);
         active = true;
+    }
+//
+//    public void setup(float x, float y, float vx, float vy) {
+//        position.set(x, y);
+//        velocity.set(vx, vy);
+//        active = true;
+//    }
+
+    public void render(SpriteBatch batch) {
+        bullet.draw(batch);
     }
 
     public void destroy() {
@@ -49,12 +77,17 @@ public class Bullet {
         }
     }
 
-    public void setHitBox(int width, int height) {
-        hitBox.set(position.x, position.y, width, height);
-    }
-
     public Rectangle getHitBox() {
         return hitBox;
+    }
+
+    @Override
+    public void reset() {
+        destroy();
+    }
+
+    public Vector2 getPosition() {
+        return position;
     }
 
 }

@@ -8,6 +8,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.scenes.scene2d.Action;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -19,6 +22,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+
+import java.util.Arrays;
 
 import ru.geekbrains.stargame.animations.Star3D;
 import ru.geekbrains.stargame.screens.Base2DScreen;
@@ -105,6 +110,9 @@ public class MainScreen extends Base2DScreen {
         if (stage != null) {
             stage.dispose();
         }
+        renderer.dispose();
+        batch.dispose();
+        font.dispose();
     }
 
     private void btnSetUp() {
@@ -150,12 +158,12 @@ public class MainScreen extends Base2DScreen {
                         Actions.fadeIn(0.5f),
                         Actions.fadeOut(0.5f),
                         Actions.run(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            game.setScreen(game.getScreenType(
-                                                    StarGame.ScreenType.GAME_SCREEN));
-                                        }
-                                    })
+                            @Override
+                            public void run() {
+                                game.setScreen(game.getScreenType(
+                                        StarGame.ScreenType.GAME_SCREEN));
+                            }
+                        })
                         )
                 );
             }

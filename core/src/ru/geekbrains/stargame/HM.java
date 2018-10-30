@@ -46,7 +46,7 @@ public class HM extends Base2DScreen {
             pos.set(touch);
         }
         batch.begin();
-        batch.draw(img, pos.x, pos.y, 0.15f, 0.15f);
+        batch.draw(img, pos.x, pos.y, 0.05f, 0.05f);
         batch.end();
 
     }

@@ -56,6 +56,7 @@ public class LoadingScreen extends ScreenAdapter {
                 new BitmapFontLoader.BitmapFontParameter();
         bfp.atlasName = "texture_asset.atlas";
 
+        game.getAssetManager().load("laser_beam.png", Texture.class);
         game.getAssetManager().load("space_font.fnt", BitmapFont.class, bfp);
         game.getAssetManager().load("through_space.ogg", Music.class);
     }
@@ -75,8 +76,8 @@ public class LoadingScreen extends ScreenAdapter {
 
     private void update() {
         if (game.getAssetManager().update()) {
-            //game.setScreen(game.getScreenType(StarGame.ScreenType.MAIN_SCREEN));
-            game.setScreen(new HM());
+            game.setScreen(game.getScreenType(StarGame.ScreenType.MAIN_SCREEN));
+            //game.setScreen(new HM());
         } else {
             progress = game.getAssetManager().getProgress();
         }

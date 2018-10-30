@@ -22,6 +22,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import ru.geekbrains.stargame.animations.Background;
 import ru.geekbrains.stargame.animations.ExplosionAnimation;
+import ru.geekbrains.stargame.animations.ExplosionPool;
 import ru.geekbrains.stargame.animations.LightningAnimation;
 import ru.geekbrains.stargame.screens.Base2DScreen;
 import ru.geekbrains.stargame.gameobjects.*;
@@ -54,7 +55,8 @@ public class GameScreen extends Base2DScreen {
     private DelayedRemovalArray<Enemy> enemies;
     private DelayedRemovalArray<Asteroids> asteroids;
     private DelayedRemovalArray<LightningAnimation> lightning;
-    private DelayedRemovalArray<ExplosionAnimation> explosions;
+    private DelayedRemovalArray<ExplosionAnimation> activeExplosions;
+    private ExplosionPool explosionPool;
 
     private LightningAnimation lightningAnimation;
 
@@ -62,7 +64,7 @@ public class GameScreen extends Base2DScreen {
     private StarGameHud hud;
 
     private int pScore = 0;
-    private int pLives = 3;
+    //private int pLives = 3;
 
     public GameScreen(StarGame game) {
         this.game = game;
@@ -106,7 +108,8 @@ public class GameScreen extends Base2DScreen {
         asteroids.add(new Asteroids(atlas));
 
         lightning = new DelayedRemovalArray<LightningAnimation>();
-        explosions = new DelayedRemovalArray<ExplosionAnimation>();
+        activeExplosions = new DelayedRemovalArray<ExplosionAnimation>();
+        explosionPool = new ExplosionPool(atlas);
 
         r = new ShapeRenderer();
     }
@@ -156,14 +159,20 @@ public class GameScreen extends Base2DScreen {
         removeAsteroid();
         asteroids.end();
 
-        explosions.begin();
-        for (ExplosionAnimation a : explosions) {
+        activeExplosions.begin();
+        for (ExplosionAnimation a : activeExplosions) {
             a.render(batch, delta);
+        }
+        activeExplosions.end();
+
+        activeExplosions.begin();
+        for (ExplosionAnimation a : activeExplosions) {
             if (a.getExplosionAnim().isAnimationFinished(a.getElapsedTime())) {
-                explosions.removeValue(a, false);
+                explosionPool.free(a);
+                activeExplosions.removeValue(a, true);
             }
         }
-        explosions.end();
+        activeExplosions.end();
 
         lightning.begin();
         for (LightningAnimation a : lightning) {
@@ -175,41 +184,10 @@ public class GameScreen extends Base2DScreen {
         lightning.end();
 
         BulletEmitter.getInstance().render(batch);
-        hud.render(batch, pLives, pScore);
+        hud.render(batch, player.getLives(), pScore);
 
         batch.end();
 
-
-        // Debug
-        r.setProjectionMatrix(camera.combined);
-        r.begin(ShapeRenderer.ShapeType.Line);
-        r.rect(
-                player.getHitBox().x,
-                player.getHitBox().y,
-                player.getHitBox().width,
-                player.getHitBox().height
-        );
-        r.circle(player.getHitCircle().x, player.getHitCircle().y, player.getHitCircle().radius);
-
-        for (Enemy e : enemies) {
-            r.rect(
-                    e.getHitBox().x,
-                    e.getHitBox().y,
-                    e.getHitBox().width,
-                    e.getHitBox().height
-            );
-        }
-
-
-        for (Asteroids a : asteroids) {
-            r.circle(
-                    a.getHitBox().x,
-                    a.getHitBox().y,
-                    a.getHitBox().radius
-            );
-        }
-
-        r.end();
         BulletEmitter.getInstance().update(delta);
         collisionDetection();
     }
@@ -217,15 +195,17 @@ public class GameScreen extends Base2DScreen {
     private void collisionDetection() {
         for (Enemy e : enemies) {
             if (e.getHitBox().overlaps(player.getHitBox()) && player.isAlive()) {
-                if (explosions.size == 0) {
-                    explosions.add(new ExplosionAnimation(atlas));
-                    explosions.get(0).setPosition(player.getPosition());
-                    player.setAlive(false);
-                    pLives--;
-                    if (pLives < 1) {
-                        // TODO game over screen
-                        pLives = 3;
-                    }
+                ExplosionAnimation ea = explosionPool.obtain();
+                ea.setActive(true);
+                ea.setPosition(player.getPosition());
+                activeExplosions.add(ea);
+                player.setAlive(false);
+                player.setLives(-1);
+                player.setAlive(true);
+                player.respawn();
+                if (player.getLives() < 1) {
+                    // TODO game over screen
+                    player.setLives(3);
                 }
             }
             for (Bullet b : BulletEmitter.getInstance().bullets) {
@@ -233,15 +213,15 @@ public class GameScreen extends Base2DScreen {
                     if (e.getHitBox().overlaps(b.getHitBox())) {
                         e.setOutOfScreen(true);
                         b.destroy();
-                        if (explosions.size == 0) {
-                            explosions.add(new ExplosionAnimation(atlas));
-                            explosions.get(0).setPosition(
-                                    new Vector2(
-                                            e.getPosition().x + e.getHitBox().width / 2,
-                                            e.getPosition().y + e.getHitBox().height / 2
-                                    )
-                            );
-                        }
+                        ExplosionAnimation ea = explosionPool.obtain();
+                        ea.setActive(true);
+                        ea.setPosition(
+                                new Vector2(
+                                        e.getPosition().x + e.getHitBox().width / 2,
+                                        e.getPosition().y + e.getHitBox().height / 2
+                                )
+                        );
+                        activeExplosions.add(ea);
                         pScore++;
                     }
                 }
@@ -251,14 +231,34 @@ public class GameScreen extends Base2DScreen {
 
         for (Asteroids a : asteroids) {
             if (a.getHitBox().overlaps(player.getHitCircle()) && player.isAlive()) {
-                if (explosions.size == 0) {
-                    explosions.add(new ExplosionAnimation(atlas));
-                    explosions.get(0).setPosition(player.getPosition());
-                    player.setAlive(false);
-                    pLives--;
-                    if (pLives < 1) {
-                        //game over screen
-                        pLives = 3;
+                ExplosionAnimation ea = explosionPool.obtain();
+                ea.setActive(true);
+                ea.setPosition(player.getPosition());
+                activeExplosions.add(ea);
+                player.setAlive(false);
+                player.setLives(-1);
+                player.setAlive(true);
+                player.respawn();
+                if (player.getLives() < 1) {
+                    // TODO game over screen
+                    player.setLives(3);
+                }
+            }
+            for (Bullet b : BulletEmitter.getInstance().bullets) {
+                if (b.active) {
+                    if (a.getHitBox().contains(b.getPosition())) {
+                        a.setOutOfScreen(true);
+                        b.destroy();
+                        ExplosionAnimation ea = explosionPool.obtain();
+                        ea.setActive(true);
+                        ea.setPosition(
+                                new Vector2(
+                                        a.getPosition().x + a.getHitBox().radius / 2,
+                                        a.getPosition().y + a.getHitBox().radius / 2
+                                )
+                        );
+                        activeExplosions.add(ea);
+                        pScore++;
                     }
                 }
             }
@@ -378,5 +378,7 @@ public class GameScreen extends Base2DScreen {
         batch.dispose();
         atlas.dispose();
         getMusic().dispose();
+        font.dispose();
+        stage.dispose();
     }
 }

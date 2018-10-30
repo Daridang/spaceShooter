@@ -27,7 +27,6 @@ public class BulletEmitter {
         bullets = new Bullet[200];
         for (int i = 0; i < bullets.length; i++) {
             bullets[i] = new Bullet();
-            bullets[i].setHitBox(texture.getWidth(), texture.getHeight());
         }
     }
 
