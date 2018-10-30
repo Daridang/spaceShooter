@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.Random;
@@ -21,20 +22,23 @@ import ru.geekbrains.stargame.StarGame;
  * on 19/10/2018.
  */
 
-public class Enemy {
+public class Enemy implements Pool.Poolable{
 
     private Rectangle hitBox;
     private Vector2 position;
     private TextureRegion region;
     private Random random;
     private float speed;
-    private boolean isOutOfScreen = false;
+    private boolean isActive = false;
     private long spawnTime;
 
     public Enemy(TextureAtlas atlas) {
         region = atlas.findRegion("stateczek");
         spawnTime = TimeUtils.millis();
+        init();
+    }
 
+    private void init() {
         // ??? every 2nd is not flipped ???
         region.flip(false, true);
         if (!region.isFlipY()) {
@@ -61,11 +65,10 @@ public class Enemy {
     public void render(SpriteBatch batch, float delta) {
         position.y -= speed * delta;
         if (position.y + region.getRegionHeight() * 2 < 0) {
-            isOutOfScreen = true;
+            isActive = true;
         }
         batch.draw(region, position.x, position.y);
         update();
-        //Gdx.app.log("TAG", String.valueOf(isOutOfScreen));
     }
 
     public Vector2 getPosition() {
@@ -84,12 +87,12 @@ public class Enemy {
         this.speed = speed;
     }
 
-    public boolean isOutOfScreen() {
-        return isOutOfScreen;
+    public boolean isActive() {
+        return isActive;
     }
 
-    public void setOutOfScreen(boolean outOfScreen) {
-        isOutOfScreen = outOfScreen;
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
     }
 
     public long getSpawnTime() {
@@ -104,4 +107,10 @@ public class Enemy {
         this.hitBox = hitBox;
     }
 
+    @Override
+    public void reset() {
+        init();
+        setIsActive(false);
+        spawnTime = TimeUtils.millis();
+    }
 }

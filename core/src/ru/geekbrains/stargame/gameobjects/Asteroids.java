@@ -6,8 +6,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import java.sql.Time;
 import java.util.Random;
 
 import ru.geekbrains.stargame.StarGame;
@@ -20,12 +22,11 @@ import ru.geekbrains.stargame.StarGame;
  * on 22/10/2018.
  */
 
-public class Asteroids {
+public class Asteroids implements Pool.Poolable{
     private Vector2 position;
     private TextureRegion region;
-    private Random random;
     private float speed;
-    private boolean isOutOfScreen = false;
+    private boolean isActive = false;
     private long spawnTime;
     private float angle;
     private Circle hitBox;
@@ -33,8 +34,11 @@ public class Asteroids {
     public Asteroids(TextureAtlas atlas) {
         region = atlas.findRegion("Asteroids_64x64");
         spawnTime = TimeUtils.millis();
-
-        random = new Random();
+        init();
+    }
+    
+    private void init() {
+        Random random = new Random();
         position = new Vector2(
                 random.nextInt((int) StarGame.WORLD_WIDTH - region.getRegionWidth()),
                 StarGame.WORLD_HEIGHT * 2);
@@ -58,7 +62,7 @@ public class Asteroids {
         angle += speed * delta;
         position.y -= speed * delta;
         if (position.y + region.getRegionHeight() * 2 < 0) {
-            isOutOfScreen = true;
+            isActive = false;
         }
         batch.draw(
                 region,
@@ -68,7 +72,6 @@ public class Asteroids {
                 region.getRegionWidth(), region.getRegionHeight(),
                 1f, 1f, angle
         );
-        //batch.draw(region, position.x, position.y);
         update();
     }
 
@@ -88,12 +91,12 @@ public class Asteroids {
         this.speed = speed;
     }
 
-    public boolean isOutOfScreen() {
-        return isOutOfScreen;
+    public boolean isActive() {
+        return isActive;
     }
 
-    public void setOutOfScreen(boolean outOfScreen) {
-        isOutOfScreen = outOfScreen;
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
     }
 
     public long getSpawnTime() {
@@ -108,4 +111,10 @@ public class Asteroids {
         this.hitBox = hitBox;
     }
 
+    @Override
+    public void reset() {
+        init();
+        setIsActive(false);
+        spawnTime = TimeUtils.millis();
+    }
 }

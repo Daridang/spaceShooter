@@ -9,20 +9,18 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.DelayedRemovalArray;
 import com.badlogic.gdx.utils.TimeUtils;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import ru.geekbrains.stargame.animations.Background;
 import ru.geekbrains.stargame.animations.ExplosionAnimation;
-import ru.geekbrains.stargame.animations.ExplosionPool;
+import ru.geekbrains.stargame.pools.AsteroidsPool;
+import ru.geekbrains.stargame.pools.EnemiesPool;
+import ru.geekbrains.stargame.pools.ExplosionPool;
 import ru.geekbrains.stargame.animations.LightningAnimation;
 import ru.geekbrains.stargame.screens.Base2DScreen;
 import ru.geekbrains.stargame.gameobjects.*;
@@ -36,27 +34,29 @@ import ru.geekbrains.stargame.gameobjects.*;
  */
 
 public class GameScreen extends Base2DScreen {
+
+    private float spawnDelta = MathUtils.random(1000f, 5000f);
+    private static final int ASTEROIDS = 6;
+    private static final int ENEMIES = 6;
+
     private OrthographicCamera camera;
     private Stage stage;
-    //private SpriteBatch batch;
     private StarGame game;
     private TextureAtlas atlas;
 
     private BitmapFont font;
-    private GlyphLayout score;
-    private GlyphLayout scoreNr;
-    private GlyphLayout lives;
-    private GlyphLayout livesNr;
 
     private Background background;
 
     private Player player;
 
-    private DelayedRemovalArray<Enemy> enemies;
-    private DelayedRemovalArray<Asteroids> asteroids;
+    private DelayedRemovalArray<Enemy> activeEnemies;
+    private DelayedRemovalArray<Asteroids> activeAsteroids;
     private DelayedRemovalArray<LightningAnimation> lightning;
     private DelayedRemovalArray<ExplosionAnimation> activeExplosions;
     private ExplosionPool explosionPool;
+    private AsteroidsPool asteroidsPool;
+    private EnemiesPool enemiesPool;
 
     private LightningAnimation lightningAnimation;
 
@@ -88,11 +88,6 @@ public class GameScreen extends Base2DScreen {
 
         batch = new SpriteBatch();
 
-        score = new GlyphLayout();
-        scoreNr = new GlyphLayout();
-        lives = new GlyphLayout();
-        livesNr = new GlyphLayout();
-
         font = game.getAssetManager().get("space_font.fnt");
         atlas = game.getAssetManager().get("texture_asset.atlas");
 
@@ -102,12 +97,21 @@ public class GameScreen extends Base2DScreen {
         background = new Background(atlas);
 
         player = new Player(atlas);
-        enemies = new DelayedRemovalArray<Enemy>();
-        asteroids = new DelayedRemovalArray<Asteroids>();
-        enemies.add(new Enemy(atlas));
-        asteroids.add(new Asteroids(atlas));
+
+        enemiesPool = new EnemiesPool(atlas);
+        activeEnemies = new DelayedRemovalArray<Enemy>();
+        Enemy e = enemiesPool.obtain();
+        e.setIsActive(true);
+        activeEnemies.add(e);
+
+        asteroidsPool = new AsteroidsPool(atlas);
+        activeAsteroids = new DelayedRemovalArray<Asteroids>();
+        Asteroids a = asteroidsPool.obtain();
+        a.setIsActive(true);
+        activeAsteroids.add(a);
 
         lightning = new DelayedRemovalArray<LightningAnimation>();
+
         activeExplosions = new DelayedRemovalArray<ExplosionAnimation>();
         explosionPool = new ExplosionPool(atlas);
 
@@ -143,21 +147,21 @@ public class GameScreen extends Base2DScreen {
             player.render(batch, delta);
         }
 
-        enemies.begin();
+        activeEnemies.begin();
         randomEnemySpawn();
-        for (Enemy e : enemies) {
+        for (Enemy e : activeEnemies) {
             e.render(batch, delta);
         }
         removeEnemy();
-        enemies.end();
+        activeEnemies.end();
 
-        asteroids.begin();
+        activeAsteroids.begin();
         randomAsteroidsSpawn();
-        for (Asteroids a : asteroids) {
+        for (Asteroids a : activeAsteroids) {
             a.render(batch, delta);
         }
         removeAsteroid();
-        asteroids.end();
+        activeAsteroids.end();
 
         activeExplosions.begin();
         for (ExplosionAnimation a : activeExplosions) {
@@ -193,7 +197,7 @@ public class GameScreen extends Base2DScreen {
     }
 
     private void collisionDetection() {
-        for (Enemy e : enemies) {
+        for (Enemy e : activeEnemies) {
             if (e.getHitBox().overlaps(player.getHitBox()) && player.isAlive()) {
                 ExplosionAnimation ea = explosionPool.obtain();
                 ea.setActive(true);
@@ -211,7 +215,7 @@ public class GameScreen extends Base2DScreen {
             for (Bullet b : BulletEmitter.getInstance().bullets) {
                 if (b.active) {
                     if (e.getHitBox().overlaps(b.getHitBox())) {
-                        e.setOutOfScreen(true);
+                        e.setIsActive(false);
                         b.destroy();
                         ExplosionAnimation ea = explosionPool.obtain();
                         ea.setActive(true);
@@ -229,7 +233,7 @@ public class GameScreen extends Base2DScreen {
 
         }
 
-        for (Asteroids a : asteroids) {
+        for (Asteroids a : activeAsteroids) {
             if (a.getHitBox().overlaps(player.getHitCircle()) && player.isAlive()) {
                 ExplosionAnimation ea = explosionPool.obtain();
                 ea.setActive(true);
@@ -247,7 +251,7 @@ public class GameScreen extends Base2DScreen {
             for (Bullet b : BulletEmitter.getInstance().bullets) {
                 if (b.active) {
                     if (a.getHitBox().contains(b.getPosition())) {
-                        a.setOutOfScreen(true);
+                        a.setIsActive(false);
                         b.destroy();
                         ExplosionAnimation ea = explosionPool.obtain();
                         ea.setActive(true);
@@ -284,38 +288,39 @@ public class GameScreen extends Base2DScreen {
         return super.touchDown(screenX, screenY, pointer, button);
     }
 
-    private float spawnDelta = MathUtils.random(1000f, 5000f);
-
     private void randomEnemySpawn() {
-        long currentTime = TimeUtils.millis();
-
-        if (currentTime - enemies.peek().getSpawnTime() > spawnDelta) {
-
-            enemies.add(new Enemy(atlas));
+        Enemy e;
+        if (activeEnemies.size < ENEMIES) {
+            e = enemiesPool.obtain();
+            e.setIsActive(true);
+            activeEnemies.add(e);
         }
     }
 
     private void randomAsteroidsSpawn() {
-        long currentTime = TimeUtils.millis();
+        Asteroids a;
+        if (activeAsteroids.size < ASTEROIDS) {
+            a = asteroidsPool.obtain();
+            a.setIsActive(true);
+            activeAsteroids.add(a);
 
-        if (currentTime - asteroids.peek().getSpawnTime() > spawnDelta) {
-
-            asteroids.add(new Asteroids(atlas));
         }
     }
 
     private void removeEnemy() {
-        for (int i = 0; i < enemies.size; i++) {
-            if (enemies.get(i).isOutOfScreen()) {
-                enemies.removeIndex(i);
+        for (Enemy e : activeEnemies) {
+            if (!e.isActive()) {
+                enemiesPool.free(e);
+                activeEnemies.removeValue(e, true);
             }
         }
     }
 
     private void removeAsteroid() {
-        for (int i = 0; i < asteroids.size; i++) {
-            if (asteroids.get(i).isOutOfScreen()) {
-                asteroids.removeIndex(i);
+        for (Asteroids a : activeAsteroids) {
+            if (!a.isActive()) {
+                asteroidsPool.free(a);
+                activeAsteroids.removeValue(a, true);
             }
         }
     }

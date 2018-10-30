@@ -1,7 +1,9 @@
-package ru.geekbrains.stargame.animations;
+package ru.geekbrains.stargame.pools;
 
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Pool;
+
+import ru.geekbrains.stargame.animations.ExplosionAnimation;
 
 /**
  * Created by
