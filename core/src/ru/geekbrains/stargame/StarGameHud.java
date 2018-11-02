@@ -12,11 +12,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
  */
 
 public class StarGameHud {
-    final BitmapFont font;
+    private final BitmapFont font;
+    private boolean isShown;
 
     public StarGameHud(BitmapFont font) {
         this.font = font;
-        font.getData().setScale(1);
+        isShown = true;
     }
 
 
@@ -28,5 +29,12 @@ public class StarGameHud {
         font.draw(batch, livesStr, StarGame.WORLD_WIDTH - 200, StarGame.WORLD_HEIGHT - 20);
     }
 
+    public boolean isShown() {
+        return isShown;
+    }
+
+    public void setShown(boolean shown) {
+        isShown = shown;
+    }
 
 }

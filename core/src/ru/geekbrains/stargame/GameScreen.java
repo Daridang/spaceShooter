@@ -1,5 +1,6 @@
 package ru.geekbrains.stargame;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
@@ -12,6 +13,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.utils.DelayedRemovalArray;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -35,21 +38,16 @@ import ru.geekbrains.stargame.gameobjects.*;
 
 public class GameScreen extends Base2DScreen {
 
-    private float spawnDelta = MathUtils.random(1000f, 5000f);
+    // количество врагов и астероидов присутствующих на экране одновременно.
     private static final int ASTEROIDS = 6;
     private static final int ENEMIES = 6;
 
-    private OrthographicCamera camera;
     private Stage stage;
     private StarGame game;
     private TextureAtlas atlas;
-
     private BitmapFont font;
-
     private Background background;
-
     private Player player;
-
     private DelayedRemovalArray<Enemy> activeEnemies;
     private DelayedRemovalArray<Asteroids> activeAsteroids;
     private DelayedRemovalArray<LightningAnimation> lightning;
@@ -57,18 +55,15 @@ public class GameScreen extends Base2DScreen {
     private ExplosionPool explosionPool;
     private AsteroidsPool asteroidsPool;
     private EnemiesPool enemiesPool;
-
-    private LightningAnimation lightningAnimation;
-
-    private ShapeRenderer r;
     private StarGameHud hud;
+    private GameOverOverlay gameOver;
+    private ShapeRenderer r;
 
     private int pScore = 0;
     //private int pLives = 3;
 
     public GameScreen(StarGame game) {
         this.game = game;
-
     }
 
     @Override
@@ -79,11 +74,10 @@ public class GameScreen extends Base2DScreen {
 
     public void show() {
         super.show();
-        camera = new OrthographicCamera();
         stage = new Stage(new FitViewport(
                 StarGame.WORLD_WIDTH,
                 StarGame.WORLD_HEIGHT,
-                camera)
+                new OrthographicCamera())
         );
 
         batch = new SpriteBatch();
@@ -91,25 +85,22 @@ public class GameScreen extends Base2DScreen {
         font = game.getAssetManager().get("space_font.fnt");
         atlas = game.getAssetManager().get("texture_asset.atlas");
 
+        // Основная информация на игровом экране: очки, жизни.
         hud = new StarGameHud(font);
-        //setUpSound();
+        gameOver = new GameOverOverlay(font);
+        setUpSound();
 
         background = new Background(atlas);
 
-        player = new Player(atlas);
+        player = new Player(game);
 
-        enemiesPool = new EnemiesPool(atlas);
+        enemiesPool = new EnemiesPool(game);
         activeEnemies = new DelayedRemovalArray<Enemy>();
-        Enemy e = enemiesPool.obtain();
-        e.setIsActive(true);
-        activeEnemies.add(e);
 
         asteroidsPool = new AsteroidsPool(atlas);
         activeAsteroids = new DelayedRemovalArray<Asteroids>();
-        Asteroids a = asteroidsPool.obtain();
-        a.setIsActive(true);
-        activeAsteroids.add(a);
 
+        // анимация молнии по клику, пока просто так.
         lightning = new DelayedRemovalArray<LightningAnimation>();
 
         activeExplosions = new DelayedRemovalArray<ExplosionAnimation>();
@@ -120,14 +111,20 @@ public class GameScreen extends Base2DScreen {
 
     private void setUpSound() {
         getMusic().setLooping(true);
-        getMusic().setVolume(0.1f);
+        getMusic().setVolume(0.2f);
         getMusic().play();
     }
 
     private Music getMusic() {
         return game
                 .getAssetManager()
-                .get("through_space.ogg", Music.class);
+                .get("bgm/Battle_in_the_Stars.ogg", Music.class);
+    }
+
+    private Music gameOver() {
+        return game
+                .getAssetManager()
+                .get("bgm/Defeated_(Game_Over_Tune).ogg", Music.class);
     }
 
     public void render(float delta) {
@@ -142,19 +139,24 @@ public class GameScreen extends Base2DScreen {
 
         batch.begin();
         // прорисовка текстур здесь
+        // Рисуем игрока, если жив.
         background.render(delta, batch);
         if (player.isAlive()) {
             player.render(batch, delta);
         }
 
+        // Враги
         activeEnemies.begin();
         randomEnemySpawn();
+
+        // Если в списке находятся активные противники, рендерим.
         for (Enemy e : activeEnemies) {
             e.render(batch, delta);
         }
         removeEnemy();
         activeEnemies.end();
 
+        // Астероиды
         activeAsteroids.begin();
         randomAsteroidsSpawn();
         for (Asteroids a : activeAsteroids) {
@@ -163,6 +165,7 @@ public class GameScreen extends Base2DScreen {
         removeAsteroid();
         activeAsteroids.end();
 
+        // Анимация взрывов.
         activeExplosions.begin();
         for (ExplosionAnimation a : activeExplosions) {
             a.render(batch, delta);
@@ -188,8 +191,16 @@ public class GameScreen extends Base2DScreen {
         lightning.end();
 
         BulletEmitter.getInstance().render(batch);
-        hud.render(batch, player.getLives(), pScore);
+        if (hud.isShown()) {
+            hud.render(batch, player.getLives(), pScore);
+        }
 
+        if (gameOver.isShown()) {
+            gameOver.render(batch);
+//            getMusic().dispose();
+//            gameOver().setVolume(0.1f);
+//            gameOver().play();
+        }
         batch.end();
 
         BulletEmitter.getInstance().update(delta);
@@ -200,16 +211,29 @@ public class GameScreen extends Base2DScreen {
         for (Enemy e : activeEnemies) {
             if (e.getHitBox().overlaps(player.getHitBox()) && player.isAlive()) {
                 ExplosionAnimation ea = explosionPool.obtain();
+
+                // При столкновении с кораблем противника взрыв корабля игрока
                 ea.setActive(true);
                 ea.setPosition(player.getPosition());
                 activeExplosions.add(ea);
+                game.getSm().getExplosion().play(1f);
+
+                // и корабля противника
+                e.setIsActive(false);
+                ea = explosionPool.obtain();
+                ea.setPosition(e.getPosition());
+                activeExplosions.add(ea);
+
                 player.setAlive(false);
                 player.setLives(-1);
                 player.setAlive(true);
-                player.respawn();
+                player.setPosition(player.getRespawnPosition().cpy());
+
                 if (player.getLives() < 1) {
                     // TODO game over screen
-                    player.setLives(3);
+                    hud.setShown(false);
+                    gameOver.setShown(true);
+                    player.setAlive(false);
                 }
             }
             for (Bullet b : BulletEmitter.getInstance().bullets) {
@@ -217,6 +241,7 @@ public class GameScreen extends Base2DScreen {
                     if (e.getHitBox().overlaps(b.getHitBox())) {
                         e.setIsActive(false);
                         b.destroy();
+                        game.getSm().getExplosion().play(1f);
                         ExplosionAnimation ea = explosionPool.obtain();
                         ea.setActive(true);
                         ea.setPosition(
@@ -239,13 +264,16 @@ public class GameScreen extends Base2DScreen {
                 ea.setActive(true);
                 ea.setPosition(player.getPosition());
                 activeExplosions.add(ea);
+                game.getSm().getExplosion().play(1f);
                 player.setAlive(false);
                 player.setLives(-1);
                 player.setAlive(true);
-                player.respawn();
+                player.setPosition(player.getRespawnPosition().cpy());
                 if (player.getLives() < 1) {
                     // TODO game over screen
-                    player.setLives(3);
+                    hud.setShown(false);
+                    gameOver.setShown(true);
+                    player.setAlive(false);
                 }
             }
             for (Bullet b : BulletEmitter.getInstance().bullets) {
@@ -253,6 +281,7 @@ public class GameScreen extends Base2DScreen {
                     if (a.getHitBox().contains(b.getPosition())) {
                         a.setIsActive(false);
                         b.destroy();
+                        game.getSm().getExplosion().play(1f);
                         ExplosionAnimation ea = explosionPool.obtain();
                         ea.setActive(true);
                         ea.setPosition(
@@ -276,7 +305,7 @@ public class GameScreen extends Base2DScreen {
                 screenY)
         );
 
-        lightningAnimation = new LightningAnimation(atlas);
+        LightningAnimation lightningAnimation = new LightningAnimation(atlas);
         lightningAnimation.setPosition(v);
 
         if (lightning.size == 0) {
@@ -285,10 +314,18 @@ public class GameScreen extends Base2DScreen {
 
         player.setTargetPosition(v);
         player.setTargetSet(true);
+
+        if (!player.isAlive()) {
+            player.respawn();
+            gameOver.setShown(false);
+            hud.setShown(true);
+        }
         return super.touchDown(screenX, screenY, pointer, button);
     }
 
     private void randomEnemySpawn() {
+        // Если активных врагов меньше чем заданное количество,
+        // достаем из пула и добавляем в список.
         Enemy e;
         if (activeEnemies.size < ENEMIES) {
             e = enemiesPool.obtain();

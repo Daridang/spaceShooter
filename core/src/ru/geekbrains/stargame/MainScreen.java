@@ -2,6 +2,7 @@ package ru.geekbrains.stargame;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -41,15 +42,10 @@ public class MainScreen extends Base2DScreen {
     private StarGame game;
     private Stage stage;
     private BitmapFont font;
-    //private SpriteBatch batch;
-
     private ShapeRenderer renderer;
     private Array<Star3D> stars;
     private float speed = 20f;
     private int numberOfStars = 500;
-
-    StarGameHud hud;
-    public boolean drawHud = false;
 
     public MainScreen(StarGame game) {
         this.game = game;
@@ -65,18 +61,30 @@ public class MainScreen extends Base2DScreen {
         );
 
         font = game.getAssetManager().get("space_font.fnt");
-
-        hud = new StarGameHud(font);
-
         renderer = new ShapeRenderer();
         stars = new Array<Star3D>();
         for (int i = 0; i < numberOfStars; i++) {
             stars.add(new Star3D());
         }
 
+        setUpSound();
+        game.getSm().getLoadedSFX();
+
         batch = new SpriteBatch();
         btnSetUp();
         Gdx.input.setInputProcessor(stage);
+    }
+
+    private void setUpSound() {
+        getMusic().setLooping(true);
+        getMusic().setVolume(0.2f);
+        getMusic().play();
+    }
+
+    private Music getMusic() {
+        return game
+                .getAssetManager()
+                .get("bgm/Brave_Pilots_(Menu_Screen).ogg", Music.class);
     }
 
     @Override
@@ -113,6 +121,7 @@ public class MainScreen extends Base2DScreen {
         renderer.dispose();
         batch.dispose();
         font.dispose();
+        getMusic().dispose();
     }
 
     private void btnSetUp() {
@@ -154,9 +163,8 @@ public class MainScreen extends Base2DScreen {
                     InputEvent e, float x, float y, int pointer, int button
             ) {
 
-                stage.getRoot().addAction(Actions.sequence(
-                        Actions.fadeIn(0.5f),
-                        Actions.fadeOut(0.5f),
+                stage.addAction(Actions.sequence(
+                        Actions.fadeOut(1f),
                         Actions.run(new Runnable() {
                             @Override
                             public void run() {

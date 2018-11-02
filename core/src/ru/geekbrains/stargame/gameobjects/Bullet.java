@@ -5,6 +5,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool;
@@ -53,12 +54,6 @@ public class Bullet implements Pool.Poolable{
         velocity.set(xvel, yvel);
         active = true;
     }
-//
-//    public void setup(float x, float y, float vx, float vy) {
-//        position.set(x, y);
-//        velocity.set(vx, vy);
-//        active = true;
-//    }
 
     public void render(SpriteBatch batch) {
         bullet.draw(batch);

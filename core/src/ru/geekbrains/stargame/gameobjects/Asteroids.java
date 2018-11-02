@@ -27,13 +27,11 @@ public class Asteroids implements Pool.Poolable{
     private TextureRegion region;
     private float speed;
     private boolean isActive = false;
-    private long spawnTime;
     private float angle;
     private Circle hitBox;
 
     public Asteroids(TextureAtlas atlas) {
         region = atlas.findRegion("Asteroids_64x64");
-        spawnTime = TimeUtils.millis();
         init();
     }
     
@@ -99,10 +97,6 @@ public class Asteroids implements Pool.Poolable{
         this.isActive = isActive;
     }
 
-    public long getSpawnTime() {
-        return spawnTime;
-    }
-
     public Circle getHitBox() {
         return hitBox;
     }
@@ -115,6 +109,5 @@ public class Asteroids implements Pool.Poolable{
     public void reset() {
         init();
         setIsActive(false);
-        spawnTime = TimeUtils.millis();
     }
 }

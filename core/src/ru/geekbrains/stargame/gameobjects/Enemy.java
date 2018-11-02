@@ -27,15 +27,33 @@ public class Enemy implements Pool.Poolable{
     private Rectangle hitBox;
     private Vector2 position;
     private TextureRegion region;
+    private TextureAtlas atlas;
     private Random random;
     private float speed;
     private boolean isActive = false;
-    private long spawnTime;
+    private StarGame game;
 
-    public Enemy(TextureAtlas atlas) {
+    public Enemy(StarGame game) {
+        this.game = game;
+        atlas = game.getAssetManager().get("texture_asset.atlas");
         region = atlas.findRegion("stateczek");
-        spawnTime = TimeUtils.millis();
         init();
+    }
+
+    public void fire() {
+        Bullet[] bl = BulletEmitter.getInstance().bullets;
+        for (Bullet b : bl) {
+            if (!b.active) {
+                b.fireBullet(
+                        position.x,
+                        position.y,
+                        400 * MathUtils.cosDeg(90),
+                        400 * MathUtils.sinDeg(90)
+                );
+                game.getSm().getShoot().play(1f);
+                break;
+            }
+        }
     }
 
     private void init() {
@@ -65,7 +83,7 @@ public class Enemy implements Pool.Poolable{
     public void render(SpriteBatch batch, float delta) {
         position.y -= speed * delta;
         if (position.y + region.getRegionHeight() * 2 < 0) {
-            isActive = true;
+            isActive = false;
         }
         batch.draw(region, position.x, position.y);
         update();
@@ -95,10 +113,6 @@ public class Enemy implements Pool.Poolable{
         this.isActive = isActive;
     }
 
-    public long getSpawnTime() {
-        return spawnTime;
-    }
-
     public Rectangle getHitBox() {
         return hitBox;
     }
@@ -111,6 +125,5 @@ public class Enemy implements Pool.Poolable{
     public void reset() {
         init();
         setIsActive(false);
-        spawnTime = TimeUtils.millis();
     }
 }

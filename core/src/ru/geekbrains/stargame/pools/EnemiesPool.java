@@ -3,6 +3,7 @@ package ru.geekbrains.stargame.pools;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Pool;
 
+import ru.geekbrains.stargame.StarGame;
 import ru.geekbrains.stargame.gameobjects.Enemy;
 
 /**
@@ -15,14 +16,14 @@ import ru.geekbrains.stargame.gameobjects.Enemy;
 
 public class EnemiesPool extends Pool<Enemy> {
     private static final int ENEMIES_COUNT = 24;
-    private TextureAtlas atlas;
+    private StarGame game;
 
-    public EnemiesPool(TextureAtlas atlas) {
+    public EnemiesPool(StarGame game) {
         super(ENEMIES_COUNT);
-        this.atlas = atlas;
+        this.game = game;
     }
     @Override
     protected Enemy newObject() {
-        return new Enemy(atlas);
+        return new Enemy(game);
     }
 }

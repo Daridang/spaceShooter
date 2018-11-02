@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.loaders.BitmapFontLoader;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -59,6 +60,28 @@ public class LoadingScreen extends ScreenAdapter {
         game.getAssetManager().load("laser_beam.png", Texture.class);
         game.getAssetManager().load("space_font.fnt", BitmapFont.class, bfp);
         game.getAssetManager().load("through_space.ogg", Music.class);
+        game.getAssetManager().load("laser2.mp3", Sound.class);
+        game.getAssetManager().load("explosion09.wav", Sound.class);
+
+        game.getAssetManager().load("bgm/Alone_Against_Enemy.ogg", Music.class);
+        game.getAssetManager().load("bgm/Battle_in_the_Stars.ogg", Music.class);
+        game.getAssetManager().load(
+                "bgm/Brave_Pilots_(Menu_Screen).ogg", Music.class
+        );
+        game.getAssetManager().load(
+                "bgm/DeathMatch_(Boss_Theme).ogg", Music.class
+        );
+        game.getAssetManager().load(
+                "bgm/Defeated_(Game_Over_Tune).ogg", Music.class
+        );
+        game.getAssetManager().load("bgm/Epic_End.ogg", Music.class);
+        game.getAssetManager().load("bgm/Rain_of_Lasers.ogg", Music.class);
+        game.getAssetManager().load(
+                "bgm/SkyFire_(Title_Screen).ogg", Music.class
+        );
+        game.getAssetManager().load("bgm/Space_Heroes.ogg", Music.class);
+        game.getAssetManager().load("bgm/Victory_Tune.ogg", Music.class);
+        game.getAssetManager().load("bgm/Without_Fear.ogg", Music.class);
     }
 
     @Override

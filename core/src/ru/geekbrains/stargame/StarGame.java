@@ -24,6 +24,9 @@ public class StarGame extends Game {
 
     private final AssetManager assetManager = new AssetManager();
 
+    private final  SoundManager sm = new SoundManager(assetManager);
+
+
     @Override
     public void create() {
 
@@ -54,4 +57,10 @@ public class StarGame extends Game {
                 return loadingScreen;
         }
     }
+
+
+    public SoundManager getSm() {
+        return sm;
+    }
+
 }
