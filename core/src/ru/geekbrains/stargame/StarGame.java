@@ -7,6 +7,8 @@ import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 
+import ru.geekbrains.stargame.screens.mainscreen.MainScreen;
+
 public class StarGame extends Game {
 
     public enum ScreenType {
@@ -63,4 +65,8 @@ public class StarGame extends Game {
         return sm;
     }
 
+    @Override
+    public void dispose() {
+        assetManager.dispose();
+    }
 }

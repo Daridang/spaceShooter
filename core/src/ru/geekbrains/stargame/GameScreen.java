@@ -88,7 +88,6 @@ public class GameScreen extends Base2DScreen {
         // Основная информация на игровом экране: очки, жизни.
         hud = new StarGameHud(font);
         gameOver = new GameOverOverlay(font);
-        setUpSound();
 
         background = new Background(atlas);
 
@@ -106,25 +105,10 @@ public class GameScreen extends Base2DScreen {
         activeExplosions = new DelayedRemovalArray<ExplosionAnimation>();
         explosionPool = new ExplosionPool(atlas);
 
+        game.getSm().getBattleInTheStars().setLooping(true);
+        game.getSm().getBattleInTheStars().setVolume(Global.MUSIC_VOLUME);
+        game.getSm().getBattleInTheStars().play();
         r = new ShapeRenderer();
-    }
-
-    private void setUpSound() {
-        getMusic().setLooping(true);
-        getMusic().setVolume(0.2f);
-        getMusic().play();
-    }
-
-    private Music getMusic() {
-        return game
-                .getAssetManager()
-                .get("bgm/Battle_in_the_Stars.ogg", Music.class);
-    }
-
-    private Music gameOver() {
-        return game
-                .getAssetManager()
-                .get("bgm/Defeated_(Game_Over_Tune).ogg", Music.class);
     }
 
     public void render(float delta) {
@@ -197,9 +181,6 @@ public class GameScreen extends Base2DScreen {
 
         if (gameOver.isShown()) {
             gameOver.render(batch);
-//            getMusic().dispose();
-//            gameOver().setVolume(0.1f);
-//            gameOver().play();
         }
         batch.end();
 
@@ -216,7 +197,7 @@ public class GameScreen extends Base2DScreen {
                 ea.setActive(true);
                 ea.setPosition(player.getPosition());
                 activeExplosions.add(ea);
-                game.getSm().getExplosion().play(1f);
+                game.getSm().getExplosion().play(Global.SOUND_VOLUME);
 
                 // и корабля противника
                 e.setIsActive(false);
@@ -230,6 +211,9 @@ public class GameScreen extends Base2DScreen {
                 player.setPosition(player.getRespawnPosition().cpy());
 
                 if (player.getLives() < 1) {
+                    game.getSm().getBattleInTheStars().stop();
+                    game.getSm().getGameOver().setVolume(Global.MUSIC_VOLUME);
+                    game.getSm().getGameOver().play();
                     // TODO game over screen
                     hud.setShown(false);
                     gameOver.setShown(true);
@@ -241,7 +225,7 @@ public class GameScreen extends Base2DScreen {
                     if (e.getHitBox().overlaps(b.getHitBox())) {
                         e.setIsActive(false);
                         b.destroy();
-                        game.getSm().getExplosion().play(1f);
+                        game.getSm().getExplosion().play(Global.SOUND_VOLUME);
                         ExplosionAnimation ea = explosionPool.obtain();
                         ea.setActive(true);
                         ea.setPosition(
@@ -264,12 +248,22 @@ public class GameScreen extends Base2DScreen {
                 ea.setActive(true);
                 ea.setPosition(player.getPosition());
                 activeExplosions.add(ea);
-                game.getSm().getExplosion().play(1f);
+                game.getSm().getExplosion().play(Global.SOUND_VOLUME);
+
+                ea = explosionPool.obtain();
+                ea.setActive(true);
+                ea.setPosition(a.getPosition());
+                activeExplosions.add(ea);
+                a.setIsActive(false);
+
                 player.setAlive(false);
                 player.setLives(-1);
                 player.setAlive(true);
                 player.setPosition(player.getRespawnPosition().cpy());
                 if (player.getLives() < 1) {
+                    game.getSm().getBattleInTheStars().stop();
+                    game.getSm().getGameOver().setVolume(Global.MUSIC_VOLUME);
+                    game.getSm().getGameOver().play();
                     // TODO game over screen
                     hud.setShown(false);
                     gameOver.setShown(true);
@@ -281,7 +275,7 @@ public class GameScreen extends Base2DScreen {
                     if (a.getHitBox().contains(b.getPosition())) {
                         a.setIsActive(false);
                         b.destroy();
-                        game.getSm().getExplosion().play(1f);
+                        game.getSm().getExplosion().play(Global.SOUND_VOLUME);
                         ExplosionAnimation ea = explosionPool.obtain();
                         ea.setActive(true);
                         ea.setPosition(
@@ -319,6 +313,10 @@ public class GameScreen extends Base2DScreen {
             player.respawn();
             gameOver.setShown(false);
             hud.setShown(true);
+            pScore = 0;
+            game.getSm().getGameOver().stop();
+            game.getSm().getBattleInTheStars().setVolume(Global.MUSIC_VOLUME);
+            game.getSm().getBattleInTheStars().play();
         }
         return super.touchDown(screenX, screenY, pointer, button);
     }
@@ -419,7 +417,6 @@ public class GameScreen extends Base2DScreen {
     public void dispose() {
         batch.dispose();
         atlas.dispose();
-        getMusic().dispose();
         font.dispose();
         stage.dispose();
     }
