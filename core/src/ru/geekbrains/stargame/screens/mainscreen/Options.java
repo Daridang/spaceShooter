@@ -76,17 +76,11 @@ public class Options {
         music.setFontScale(0.75f);
         music.setAlignment(Align.center);
 
-        Slider.SliderStyle ss = new Slider.SliderStyle();
-        ss.background = new TextureRegionDrawable(
-                new TextureRegion(new Texture(Gdx.files.internal("sliderGUI.png")))
-        );
-        ss.knob = new TextureRegionDrawable(
-                new TextureRegion(new Texture(Gdx.files.internal("sc.png")))
-        );
-
+        Slider.SliderStyle ss = createSliderStyle();
 
         final Slider soundSlider = new Slider(0f, 1f, 0.1f, false, ss);
         soundSlider.setValue(Global.SOUND_VOLUME);
+
         final Slider musicSlider = new Slider(0f, 1f, 0.1f, false, ss);
         musicSlider.setValue(Global.MUSIC_VOLUME);
 
@@ -127,6 +121,17 @@ public class Options {
         mainMenu.add(btnBack);
         mainMenu.setFillParent(true);
         stage.addActor(mainMenu);
+    }
+
+    private Slider.SliderStyle createSliderStyle() {
+        Slider.SliderStyle ss = new Slider.SliderStyle();
+        ss.background = new TextureRegionDrawable(
+                new TextureRegion(new Texture(Gdx.files.internal("sliderGUI.png")))
+        );
+        ss.knob = new TextureRegionDrawable(
+                new TextureRegion(new Texture(Gdx.files.internal("sc.png")))
+        );
+        return ss;
     }
 
 }

@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
+import ru.geekbrains.stargame.Global;
 import ru.geekbrains.stargame.StarGame;
 import ru.geekbrains.stargame.animations.PlayerAnimation;
 
@@ -77,7 +78,7 @@ public class Player {
                         400 * MathUtils.cosDeg(90),
                         400 * MathUtils.sinDeg(90)
                 );
-                game.getSm().getShoot().play(1f);
+                game.getSm().getShoot().play(Global.SOUND_VOLUME);
                 break;
             }
         }

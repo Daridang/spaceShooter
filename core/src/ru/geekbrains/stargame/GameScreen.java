@@ -188,22 +188,24 @@ public class GameScreen extends Base2DScreen {
         collisionDetection();
     }
 
-    private void collisionDetection() {
+    private void explode(Vector2 position) {
+        ExplosionAnimation ea = explosionPool.obtain();
+        ea.setActive(true);
+        ea.setPosition(position);
+        activeExplosions.add(ea);
+        game.getSm().getExplosion().play(Global.SOUND_VOLUME);
+    }
+
+    private void forEnemy() {
         for (Enemy e : activeEnemies) {
             if (e.getHitBox().overlaps(player.getHitBox()) && player.isAlive()) {
-                ExplosionAnimation ea = explosionPool.obtain();
 
                 // При столкновении с кораблем противника взрыв корабля игрока
-                ea.setActive(true);
-                ea.setPosition(player.getPosition());
-                activeExplosions.add(ea);
-                game.getSm().getExplosion().play(Global.SOUND_VOLUME);
+                explode(player.getPosition());
 
                 // и корабля противника
                 e.setIsActive(false);
-                ea = explosionPool.obtain();
-                ea.setPosition(e.getPosition());
-                activeExplosions.add(ea);
+                explode(e.getPosition());
 
                 player.setAlive(false);
                 player.setLives(-1);
@@ -225,37 +227,25 @@ public class GameScreen extends Base2DScreen {
                     if (e.getHitBox().overlaps(b.getHitBox())) {
                         e.setIsActive(false);
                         b.destroy();
-                        game.getSm().getExplosion().play(Global.SOUND_VOLUME);
-                        ExplosionAnimation ea = explosionPool.obtain();
-                        ea.setActive(true);
-                        ea.setPosition(
-                                new Vector2(
-                                        e.getPosition().x + e.getHitBox().width / 2,
-                                        e.getPosition().y + e.getHitBox().height / 2
-                                )
-                        );
-                        activeExplosions.add(ea);
+
+                        explode(new Vector2(
+                                e.getPosition().x + e.getHitBox().width / 2,
+                                e.getPosition().y + e.getHitBox().height / 2
+                        ));
                         pScore++;
                     }
                 }
             }
 
         }
-
+    }
+    private void forAsteroids() {
         for (Asteroids a : activeAsteroids) {
             if (a.getHitBox().overlaps(player.getHitCircle()) && player.isAlive()) {
-                ExplosionAnimation ea = explosionPool.obtain();
-                ea.setActive(true);
-                ea.setPosition(player.getPosition());
-                activeExplosions.add(ea);
-                game.getSm().getExplosion().play(Global.SOUND_VOLUME);
-
-                ea = explosionPool.obtain();
-                ea.setActive(true);
-                ea.setPosition(a.getPosition());
-                activeExplosions.add(ea);
+                explode(a.getPosition());
                 a.setIsActive(false);
 
+                explode(player.getPosition());
                 player.setAlive(false);
                 player.setLives(-1);
                 player.setAlive(true);
@@ -275,21 +265,21 @@ public class GameScreen extends Base2DScreen {
                     if (a.getHitBox().contains(b.getPosition())) {
                         a.setIsActive(false);
                         b.destroy();
-                        game.getSm().getExplosion().play(Global.SOUND_VOLUME);
-                        ExplosionAnimation ea = explosionPool.obtain();
-                        ea.setActive(true);
-                        ea.setPosition(
-                                new Vector2(
-                                        a.getPosition().x + a.getHitBox().radius / 2,
-                                        a.getPosition().y + a.getHitBox().radius / 2
-                                )
-                        );
-                        activeExplosions.add(ea);
+
+                        explode( new Vector2(
+                                a.getPosition().x + a.getHitBox().radius / 2,
+                                a.getPosition().y + a.getHitBox().radius / 2
+                        ));
                         pScore++;
                     }
                 }
             }
         }
+    }
+
+    private void collisionDetection() {
+        forEnemy();
+        forAsteroids();
     }
 
     @Override

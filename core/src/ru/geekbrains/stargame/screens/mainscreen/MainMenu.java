@@ -91,7 +91,6 @@ public class MainMenu {
             public void touchUp(
                     InputEvent e, float x, float y, int pointer, int button
             ) {
-                // TODO OptionsScreen
                 stage.getActors().clear();
                 new Options(game, stage, font);
 

@@ -32,11 +32,6 @@ public class StarGame extends Game {
     @Override
     public void create() {
 
-        assetManager.setLoader(
-                TiledMap.class,
-                new TmxMapLoader(new InternalFileHandleResolver())
-        );
-
         gameScreen = new GameScreen(this);
         loadingScreen = new LoadingScreen(this);
         mainScreen = new MainScreen(this);
