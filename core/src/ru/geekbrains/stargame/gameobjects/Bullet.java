@@ -35,7 +35,7 @@ public class Bullet implements Pool.Poolable{
 
     public Bullet(AssetManager manager) {
         this.manager = manager;
-        this.position = new Vector2(0, 0);
+        this.position = new Vector2(-40, -40);
         this.velocity = new Vector2(0, 0);
         this.active = false;
         bullet = new Sprite(manager.get("laser_beam.png", Texture.class));

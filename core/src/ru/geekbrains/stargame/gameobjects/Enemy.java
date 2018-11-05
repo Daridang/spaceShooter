@@ -57,8 +57,8 @@ public class Enemy implements Pool.Poolable {
         Bullet b = bulletPool.obtain();
 
         b.fireBullet(
-                position.x,
-                position.y,
+                position.x + getHitBox().width / 2,
+                position.y + getHitBox().height / 2,
                 -400 * MathUtils.cosDeg(90),
                 -400 * MathUtils.sinDeg(90)
         );
@@ -113,7 +113,7 @@ public class Enemy implements Pool.Poolable {
             //b.render(batch);
             batch.draw(
                     b.getBullet().getTexture(),
-                    b.getPosition().x + getHitBox().width / 2,
+                    b.getPosition().x,
                     b.getPosition().y
             );
         }

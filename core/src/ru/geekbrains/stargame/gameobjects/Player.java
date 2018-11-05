@@ -3,6 +3,7 @@ package ru.geekbrains.stargame.gameobjects;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -36,6 +37,8 @@ public class Player {
     private Circle hitCircle;
     private StarGame game;
 
+    private boolean gotHit;
+
     public Player(StarGame game) {
         this.game = game;
         atlas = game.getAssetManager().get("texture_asset.atlas");
@@ -55,6 +58,7 @@ public class Player {
                 HEIGHT
         );
         hitCircle = new Circle(position, WIDTH / 2);
+        gotHit = false;
     }
 
     private void update() {
@@ -122,14 +126,29 @@ public class Player {
         }
         update();
 
-        batch.draw(
-                region,
-                position.x - region.getRegionWidth() / 2,
-                position.y - region.getRegionHeight() / 2,
-                region.getRegionWidth() / 2, region.getRegionHeight() / 2,
-                region.getRegionWidth(), region.getRegionHeight(),
-                1f, 1f, angle
-        );
+        if (gotHit) {
+            batch.setColor(Color.RED);
+            batch.draw(
+                    region,
+                    position.x - region.getRegionWidth() / 2,
+                    position.y - region.getRegionHeight() / 2,
+                    region.getRegionWidth() / 2, region.getRegionHeight() / 2,
+                    region.getRegionWidth(), region.getRegionHeight(),
+                    1f, 1f, angle
+            );
+            gotHit = false;
+            batch.setColor(Color.WHITE);
+        } else {
+
+            batch.draw(
+                    region,
+                    position.x - region.getRegionWidth() / 2,
+                    position.y - region.getRegionHeight() / 2,
+                    region.getRegionWidth() / 2, region.getRegionHeight() / 2,
+                    region.getRegionWidth(), region.getRegionHeight(),
+                    1f, 1f, angle
+            );
+        }
     }
 
 
@@ -244,4 +263,13 @@ public class Player {
     public void setRespawnPosition(Vector2 respawnPosition) {
         this.respawnPosition = respawnPosition;
     }
+
+    public boolean isGotHit() {
+        return gotHit;
+    }
+
+    public void setGotHit(boolean gotHit) {
+        this.gotHit = gotHit;
+    }
+
 }

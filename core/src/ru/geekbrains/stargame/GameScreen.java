@@ -181,18 +181,20 @@ public class GameScreen extends Base2DScreen {
         collisionDetection();
 
         // debug
-        r.begin(ShapeRenderer.ShapeType.Line);
-        for (Enemy e : activeEnemies) {
-            for (Bullet b : e.getActiveBullets()) {
-                r.rect(
-                        b.getHitBox().x,
-                        b.getHitBox().y,
-                        b.getHitBox().width,
-                        b.getHitBox().height
-                );
-            }
-        }
-        r.end();
+//        r.begin(ShapeRenderer.ShapeType.Line);
+//        r.setProjectionMatrix(stage.getViewport().getCamera().combined);
+//
+//        for (Enemy e : activeEnemies) {
+//            for (Bullet b : e.getActiveBullets()) {
+//                r.rect(
+//                        b.getHitBox().x,
+//                        b.getHitBox().y,
+//                        b.getHitBox().width,
+//                        b.getHitBox().height
+//                );
+//            }
+//        }
+//        r.end();
     }
 
     private void playerGameOver() {
@@ -217,6 +219,7 @@ public class GameScreen extends Base2DScreen {
     private void forEnemy() {
         for (Enemy e : activeEnemies) {
             if (e.getHitBox().overlaps(player.getHitBox()) && player.isAlive()) {
+                player.setGotHit(true);
 
                 // При столкновении с кораблем противника взрыв корабля игрока
                 explode(player.getPosition());
@@ -233,21 +236,23 @@ public class GameScreen extends Base2DScreen {
                 playerGameOver();
             }
 
-//            for (Bullet b : e.getActiveBullets()) {
-//                if (b.active) {
-//                    if (b.getHitBox().overlaps(player.getHitBox()) &&
-//                            player.isAlive()) {
-//                        b.destroy();
-//                        e.getBulletPool().free(b);
-//                        explode(player.getPosition());
-//                        player.setAlive(false);
-//                        player.setLives(-1);
-//                        player.setAlive(true);
-//                        player.setPosition(player.getRespawnPosition().cpy());
-//                    }
-//                }
-//                playerGameOver();
-//            }
+            // При попадании пули противника в корабль игрока
+            for (Bullet b : e.getActiveBullets()) {
+                if (b.active) {
+                    if (b.getHitBox().overlaps(player.getHitBox()) &&
+                            player.isAlive()) {
+                        player.setGotHit(true);
+                        b.destroy();
+                        e.getBulletPool().free(b);
+                        explode(player.getPosition());
+                        player.setAlive(false);
+                        player.setLives(-1);
+                        player.setAlive(true);
+                        player.setPosition(player.getRespawnPosition().cpy());
+                    }
+                }
+                playerGameOver();
+            }
 
             for (Bullet b : BulletEmitter.getInstance().bullets) {
                 if (b.active) {
@@ -270,6 +275,7 @@ public class GameScreen extends Base2DScreen {
     private void forAsteroids() {
         for (Asteroids a : activeAsteroids) {
             if (a.getHitBox().overlaps(player.getHitCircle()) && player.isAlive()) {
+                player.setGotHit(true);
                 explode(a.getPosition());
                 a.setIsActive(false);
 
