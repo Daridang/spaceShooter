@@ -59,7 +59,6 @@ public class LoadingScreen extends ScreenAdapter {
 
         game.getAssetManager().load("laser_beam.png", Texture.class);
         game.getAssetManager().load("space_font.fnt", BitmapFont.class, bfp);
-        game.getAssetManager().load("through_space.ogg", Music.class);
         game.getAssetManager().load("laser2.mp3", Sound.class);
         game.getAssetManager().load("explosion09.wav", Sound.class);
 
@@ -100,7 +99,6 @@ public class LoadingScreen extends ScreenAdapter {
     private void update() {
         if (game.getAssetManager().update()) {
             game.setScreen(game.getScreenType(StarGame.ScreenType.MAIN_SCREEN));
-            //game.setScreen(new HM());
         } else {
             progress = game.getAssetManager().getProgress();
         }

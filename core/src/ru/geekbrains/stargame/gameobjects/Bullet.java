@@ -26,6 +26,11 @@ public class Bullet implements Pool.Poolable{
     public boolean active;
     private Rectangle hitBox;
     private AssetManager manager;
+
+    public Sprite getBullet() {
+        return bullet;
+    }
+
     private Sprite bullet;
 
     public Bullet(AssetManager manager) {
@@ -40,7 +45,7 @@ public class Bullet implements Pool.Poolable{
     }
 
     public Bullet() {
-        this.position = new Vector2(0, 0);
+        this.position = new Vector2(-40, -40);
         this.velocity = new Vector2(0, 0);
         this.active = false;
 
@@ -63,6 +68,14 @@ public class Bullet implements Pool.Poolable{
         active = false;
     }
 
+    public void updateEnemuBullets(float delta) {
+        position.mulAdd(velocity, delta);
+        hitBox.setPosition(position);
+        if (position.y < -20) {
+            destroy();
+        }
+    }
+
     public void update(float dt) {
         position.mulAdd(velocity, dt);
         hitBox.setPosition(position);
@@ -78,6 +91,7 @@ public class Bullet implements Pool.Poolable{
 
     @Override
     public void reset() {
+        System.out.println("Bullet: " + getClass().getSimpleName()   + " reset.");
         destroy();
     }
 

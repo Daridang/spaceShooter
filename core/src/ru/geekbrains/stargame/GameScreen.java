@@ -1,22 +1,15 @@
 package ru.geekbrains.stargame;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.utils.DelayedRemovalArray;
-import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import ru.geekbrains.stargame.animations.Background;
@@ -186,6 +179,31 @@ public class GameScreen extends Base2DScreen {
 
         BulletEmitter.getInstance().update(delta);
         collisionDetection();
+
+        // debug
+        r.begin(ShapeRenderer.ShapeType.Line);
+        for (Enemy e : activeEnemies) {
+            for (Bullet b : e.getActiveBullets()) {
+                r.rect(
+                        b.getHitBox().x,
+                        b.getHitBox().y,
+                        b.getHitBox().width,
+                        b.getHitBox().height
+                );
+            }
+        }
+        r.end();
+    }
+
+    private void playerGameOver() {
+        if (player.getLives() < 1) {
+            game.getSm().getBattleInTheStars().stop();
+            game.getSm().getGameOver().setVolume(Global.MUSIC_VOLUME);
+            game.getSm().getGameOver().play();
+            hud.setShown(false);
+            gameOver.setShown(true);
+            player.setAlive(false);
+        }
     }
 
     private void explode(Vector2 position) {
@@ -212,16 +230,25 @@ public class GameScreen extends Base2DScreen {
                 player.setAlive(true);
                 player.setPosition(player.getRespawnPosition().cpy());
 
-                if (player.getLives() < 1) {
-                    game.getSm().getBattleInTheStars().stop();
-                    game.getSm().getGameOver().setVolume(Global.MUSIC_VOLUME);
-                    game.getSm().getGameOver().play();
-                    // TODO game over screen
-                    hud.setShown(false);
-                    gameOver.setShown(true);
-                    player.setAlive(false);
-                }
+                playerGameOver();
             }
+
+//            for (Bullet b : e.getActiveBullets()) {
+//                if (b.active) {
+//                    if (b.getHitBox().overlaps(player.getHitBox()) &&
+//                            player.isAlive()) {
+//                        b.destroy();
+//                        e.getBulletPool().free(b);
+//                        explode(player.getPosition());
+//                        player.setAlive(false);
+//                        player.setLives(-1);
+//                        player.setAlive(true);
+//                        player.setPosition(player.getRespawnPosition().cpy());
+//                    }
+//                }
+//                playerGameOver();
+//            }
+
             for (Bullet b : BulletEmitter.getInstance().bullets) {
                 if (b.active) {
                     if (e.getHitBox().overlaps(b.getHitBox())) {
@@ -239,6 +266,7 @@ public class GameScreen extends Base2DScreen {
 
         }
     }
+
     private void forAsteroids() {
         for (Asteroids a : activeAsteroids) {
             if (a.getHitBox().overlaps(player.getHitCircle()) && player.isAlive()) {
@@ -250,15 +278,7 @@ public class GameScreen extends Base2DScreen {
                 player.setLives(-1);
                 player.setAlive(true);
                 player.setPosition(player.getRespawnPosition().cpy());
-                if (player.getLives() < 1) {
-                    game.getSm().getBattleInTheStars().stop();
-                    game.getSm().getGameOver().setVolume(Global.MUSIC_VOLUME);
-                    game.getSm().getGameOver().play();
-                    // TODO game over screen
-                    hud.setShown(false);
-                    gameOver.setShown(true);
-                    player.setAlive(false);
-                }
+                playerGameOver();
             }
             for (Bullet b : BulletEmitter.getInstance().bullets) {
                 if (b.active) {
@@ -266,7 +286,7 @@ public class GameScreen extends Base2DScreen {
                         a.setIsActive(false);
                         b.destroy();
 
-                        explode( new Vector2(
+                        explode(new Vector2(
                                 a.getPosition().x + a.getHitBox().radius / 2,
                                 a.getPosition().y + a.getHitBox().radius / 2
                         ));
@@ -351,56 +371,56 @@ public class GameScreen extends Base2DScreen {
     }
 
     private void stopLeavingTheScreen() {
-//        if (player.getPosition().y - player.getRegion().getRegionHeight() / 2 < 0) {
-//            player.setPosition(new Vector2(
-//                    player.getPosition().x, player.getRegion().getRegionWidth() / 2));
-//        }
-        if (player.getPosition().y < 0) {
-            player.setPosition(
-                    new Vector2(player.getPosition().x, StarGame.WORLD_HEIGHT)
-            );
+        if (player.getPosition().y - player.getRegion().getRegionHeight() / 2 < 0) {
+            player.setPosition(new Vector2(
+                    player.getPosition().x, player.getRegion().getRegionWidth() / 2));
         }
-
-//        if (player.getPosition().x - player.getRegion().getRegionWidth() / 2 < 0) {
-//            player.setPosition(new Vector2(
-//                    player.getRegion().getRegionHeight() / 2, player.getPosition().y));
-//        }
-
-        if (player.getPosition().x < 0) {
-            player.setPosition(
-                    new Vector2(StarGame.WORLD_WIDTH, player.getPosition().y)
-            );
-        }
-
-//        if (player.getPosition().x + player.getRegion()
-//                .getRegionWidth() / 2 > StarGame.WORLD_WIDTH) {
-//            player.setPosition(new Vector2(
-//                            StarGame.WORLD_WIDTH - player.getRegion().getRegionHeight() / 2,
-//                            player.getPosition().y
-//                    )
+//        if (player.getPosition().y < 0) {
+//            player.setPosition(
+//                    new Vector2(player.getPosition().x, StarGame.WORLD_HEIGHT)
 //            );
 //        }
 
-        if (player.getPosition().x > StarGame.WORLD_WIDTH) {
-            player.setPosition(
-                    new Vector2(0, player.getPosition().y)
-            );
+        if (player.getPosition().x - player.getRegion().getRegionWidth() / 2 < 0) {
+            player.setPosition(new Vector2(
+                    player.getRegion().getRegionHeight() / 2, player.getPosition().y));
         }
 
-//        if (player.getPosition().y + player.getRegion()
-//                .getRegionHeight() / 2 > StarGame.WORLD_HEIGHT) {
-//            player.setPosition(new Vector2(
-//                            player.getPosition().x,
-//                            StarGame.WORLD_HEIGHT - player.getRegion().getRegionHeight() / 2
-//                    )
+//        if (player.getPosition().x < 0) {
+//            player.setPosition(
+//                    new Vector2(StarGame.WORLD_WIDTH, player.getPosition().y)
 //            );
 //        }
 
-        if (player.getPosition().y > StarGame.WORLD_HEIGHT) {
-            player.setPosition(
-                    new Vector2(player.getPosition().x, 0)
+        if (player.getPosition().x + player.getRegion()
+                .getRegionWidth() / 2 > StarGame.WORLD_WIDTH) {
+            player.setPosition(new Vector2(
+                            StarGame.WORLD_WIDTH - player.getRegion().getRegionHeight() / 2,
+                            player.getPosition().y
+                    )
             );
         }
+
+//        if (player.getPosition().x > StarGame.WORLD_WIDTH) {
+//            player.setPosition(
+//                    new Vector2(0, player.getPosition().y)
+//            );
+//        }
+
+        if (player.getPosition().y + player.getRegion()
+                .getRegionHeight() / 2 > StarGame.WORLD_HEIGHT) {
+            player.setPosition(new Vector2(
+                            player.getPosition().x,
+                            StarGame.WORLD_HEIGHT - player.getRegion().getRegionHeight() / 2
+                    )
+            );
+        }
+
+//        if (player.getPosition().y > StarGame.WORLD_HEIGHT) {
+//            player.setPosition(
+//                    new Vector2(player.getPosition().x, 0)
+//            );
+//        }
     }
 
     @Override

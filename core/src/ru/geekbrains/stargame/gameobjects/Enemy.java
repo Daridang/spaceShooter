@@ -1,18 +1,21 @@
 package ru.geekbrains.stargame.gameobjects;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.DelayedRemovalArray;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.Random;
 
+import ru.geekbrains.stargame.Global;
 import ru.geekbrains.stargame.StarGame;
+import ru.geekbrains.stargame.pools.BulletPool;
 
 /**
  * Created by
@@ -22,7 +25,7 @@ import ru.geekbrains.stargame.StarGame;
  * on 19/10/2018.
  */
 
-public class Enemy implements Pool.Poolable{
+public class Enemy implements Pool.Poolable {
 
     private Rectangle hitBox;
     private Vector2 position;
@@ -33,27 +36,37 @@ public class Enemy implements Pool.Poolable{
     private boolean isActive = false;
     private StarGame game;
 
+    private BulletPool bulletPool;
+    private DelayedRemovalArray<Bullet> activeBullets;
+
+    private float deltaTime;
+    private long fireTime;
+
     public Enemy(StarGame game) {
         this.game = game;
         atlas = game.getAssetManager().get("texture_asset.atlas");
         region = atlas.findRegion("stateczek");
         init();
+        bulletPool = new BulletPool(game.getAssetManager());
+        activeBullets = new DelayedRemovalArray<Bullet>();
+        deltaTime = MathUtils.random(2000f, 5000f);
+        fireTime = TimeUtils.millis();
     }
 
     public void fire() {
-        Bullet[] bl = BulletEmitter.getInstance().bullets;
-        for (Bullet b : bl) {
-            if (!b.active) {
-                b.fireBullet(
-                        position.x,
-                        position.y,
-                        400 * MathUtils.cosDeg(90),
-                        400 * MathUtils.sinDeg(90)
-                );
-                game.getSm().getShoot().play(1f);
-                break;
-            }
-        }
+        Bullet b = bulletPool.obtain();
+
+        b.fireBullet(
+                position.x,
+                position.y,
+                -400 * MathUtils.cosDeg(90),
+                -400 * MathUtils.sinDeg(90)
+        );
+
+        activeBullets.add(b);
+
+        game.getSm().getShoot().play(Global.SOUND_VOLUME);
+        fireTime = TimeUtils.millis();
     }
 
     private void init() {
@@ -78,6 +91,10 @@ public class Enemy implements Pool.Poolable{
 
     private void update() {
         hitBox.setPosition(position);
+
+        if (TimeUtils.millis() - fireTime > deltaTime) {
+            fire();
+        }
     }
 
     public void render(SpriteBatch batch, float delta) {
@@ -85,8 +102,33 @@ public class Enemy implements Pool.Poolable{
         if (position.y + region.getRegionHeight() * 2 < 0) {
             isActive = false;
         }
+
+        for (Bullet b : activeBullets) {
+            if (!b.active) {
+                bulletPool.free(b);
+                activeBullets.removeValue(b, true);
+            }
+            b.updateEnemuBullets(delta);
+            batch.setColor(0.9f, 0.0f, 0.0f, 0.8f);
+            //b.render(batch);
+            batch.draw(
+                    b.getBullet().getTexture(),
+                    b.getPosition().x + getHitBox().width / 2,
+                    b.getPosition().y
+            );
+        }
+        batch.setColor(Color.WHITE);
         batch.draw(region, position.x, position.y);
         update();
+    }
+
+
+    public BulletPool getBulletPool() {
+        return bulletPool;
+    }
+
+    public DelayedRemovalArray<Bullet> getActiveBullets() {
+        return activeBullets;
     }
 
     public Vector2 getPosition() {
