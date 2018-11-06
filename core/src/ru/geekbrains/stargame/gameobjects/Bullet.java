@@ -68,7 +68,7 @@ public class Bullet implements Pool.Poolable{
         active = false;
     }
 
-    public void updateEnemuBullets(float delta) {
+    public void updateEnemyBullets(float delta) {
         position.mulAdd(velocity, delta);
         hitBox.setPosition(position);
         if (position.y < -20) {
@@ -93,6 +93,8 @@ public class Bullet implements Pool.Poolable{
     public void reset() {
         System.out.println("Bullet: " + getClass().getSimpleName()   + " reset.");
         destroy();
+        position.set(-40f, -40f);
+        velocity.setZero();
     }
 
     public Vector2 getPosition() {

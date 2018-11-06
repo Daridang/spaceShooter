@@ -99,7 +99,7 @@ public class GameScreen extends Base2DScreen {
         explosionPool = new ExplosionPool(atlas);
 
         game.getSm().getBattleInTheStars().setLooping(true);
-        game.getSm().getBattleInTheStars().setVolume(Global.MUSIC_VOLUME);
+        //game.getSm().getBattleInTheStars().setVolume(Global.MUSIC_VOLUME);
         game.getSm().getBattleInTheStars().play();
         r = new ShapeRenderer();
     }
@@ -169,7 +169,7 @@ public class GameScreen extends Base2DScreen {
 
         BulletEmitter.getInstance().render(batch);
         if (hud.isShown()) {
-            hud.render(batch, player.getLives(), pScore);
+            hud.render(batch, player.getLives(), pScore, player.getHitPoints());
         }
 
         if (gameOver.isShown()) {
@@ -180,6 +180,8 @@ public class GameScreen extends Base2DScreen {
         BulletEmitter.getInstance().update(delta);
         collisionDetection();
 
+        stage.act(delta);
+        stage.draw();
         // debug
 //        r.begin(ShapeRenderer.ShapeType.Line);
 //        r.setProjectionMatrix(stage.getViewport().getCamera().combined);
@@ -200,7 +202,7 @@ public class GameScreen extends Base2DScreen {
     private void playerGameOver() {
         if (player.getLives() < 1) {
             game.getSm().getBattleInTheStars().stop();
-            game.getSm().getGameOver().setVolume(Global.MUSIC_VOLUME);
+            //game.getSm().getGameOver().setVolume(Global.MUSIC_VOLUME);
             game.getSm().getGameOver().play();
             hud.setShown(false);
             gameOver.setShown(true);
@@ -222,16 +224,22 @@ public class GameScreen extends Base2DScreen {
                 player.setGotHit(true);
 
                 // При столкновении с кораблем противника взрыв корабля игрока
-                explode(player.getPosition());
+                //explode(player.getPosition());
 
                 // и корабля противника
                 e.setIsActive(false);
                 explode(e.getPosition());
 
-                player.setAlive(false);
-                player.setLives(-1);
-                player.setAlive(true);
-                player.setPosition(player.getRespawnPosition().cpy());
+                player.setHitPoints(-1);
+
+                if (player.getHitPoints() < 1) {
+                    explode(player.getPosition());
+                    player.setAlive(false);
+                    player.setLives(-1);
+                    player.setAlive(true);
+                    player.setPosition(player.getRespawnPosition().cpy());
+                    player.setHitPoints(10);
+                }
 
                 playerGameOver();
             }
@@ -244,11 +252,16 @@ public class GameScreen extends Base2DScreen {
                         player.setGotHit(true);
                         b.destroy();
                         e.getBulletPool().free(b);
-                        explode(player.getPosition());
-                        player.setAlive(false);
-                        player.setLives(-1);
-                        player.setAlive(true);
-                        player.setPosition(player.getRespawnPosition().cpy());
+                        player.setHitPoints(-1);
+
+                        if (player.getHitPoints() < 1) {
+                            explode(player.getPosition());
+                            player.setAlive(false);
+                            player.setLives(-1);
+                            player.setAlive(true);
+                            player.setPosition(player.getRespawnPosition().cpy());
+                            player.setHitPoints(10);
+                        }
                     }
                 }
                 playerGameOver();
@@ -279,11 +292,15 @@ public class GameScreen extends Base2DScreen {
                 explode(a.getPosition());
                 a.setIsActive(false);
 
-                explode(player.getPosition());
-                player.setAlive(false);
-                player.setLives(-1);
-                player.setAlive(true);
-                player.setPosition(player.getRespawnPosition().cpy());
+                player.setHitPoints(-1);
+                if (player.getHitPoints() < 1) {
+                    explode(player.getPosition());
+                    player.setAlive(false);
+                    player.setLives(-1);
+                    player.setAlive(true);
+                    player.setPosition(player.getRespawnPosition().cpy());
+                    player.setHitPoints(10);
+                }
                 playerGameOver();
             }
             for (Bullet b : BulletEmitter.getInstance().bullets) {
@@ -331,7 +348,7 @@ public class GameScreen extends Base2DScreen {
             hud.setShown(true);
             pScore = 0;
             game.getSm().getGameOver().stop();
-            game.getSm().getBattleInTheStars().setVolume(Global.MUSIC_VOLUME);
+            //game.getSm().getBattleInTheStars().setVolume(Global.MUSIC_VOLUME);
             game.getSm().getBattleInTheStars().play();
         }
         return super.touchDown(screenX, screenY, pointer, button);

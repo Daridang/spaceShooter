@@ -108,7 +108,7 @@ public class Enemy implements Pool.Poolable {
                 bulletPool.free(b);
                 activeBullets.removeValue(b, true);
             }
-            b.updateEnemuBullets(delta);
+            b.updateEnemyBullets(delta);
             batch.setColor(0.9f, 0.0f, 0.0f, 0.8f);
             //b.render(batch);
             batch.draw(

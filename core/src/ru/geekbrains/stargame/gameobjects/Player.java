@@ -32,6 +32,7 @@ public class Player {
     private float angle = 0f;
     private TextureAtlas atlas;
     private int lives = 3;
+    private int hitPoints = 10;
 
     private Rectangle hitBox;
     private Circle hitCircle;
@@ -270,6 +271,14 @@ public class Player {
 
     public void setGotHit(boolean gotHit) {
         this.gotHit = gotHit;
+    }
+
+    public int getHitPoints() {
+        return hitPoints;
+    }
+
+    public void setHitPoints(int hitPoints) {
+        this.hitPoints += hitPoints;
     }
 
 }

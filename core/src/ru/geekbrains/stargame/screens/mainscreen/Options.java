@@ -87,11 +87,12 @@ public class Options {
         soundSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                long l = game.getSm().getAllSounds().first().play();
                 for (Sound m : new Array.ArrayIterator<Sound>(
                         game.getSm().getAllSounds())) {
 
                     Global.SOUND_VOLUME = soundSlider.getValue();
-                    m.setVolume(m.play(), Global.SOUND_VOLUME);
+                    m.setVolume(l, Global.SOUND_VOLUME);
                 }
             }
         });
