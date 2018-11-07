@@ -23,7 +23,7 @@ public class GameOverOverlay {
     public void render(SpriteBatch batch) {
         final String gameOver = "Game\tOver";
 
-        font.draw(batch, gameOver, StarGame.WORLD_WIDTH / 3, StarGame.WORLD_HEIGHT / 2);
+        font.draw(batch, gameOver, Global.WIDTH / 3, Global.HEIGHT / 2);
     }
 
     public boolean isShown() {

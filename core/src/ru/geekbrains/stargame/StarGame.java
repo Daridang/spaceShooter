@@ -62,6 +62,7 @@ public class StarGame extends Game {
 
     @Override
     public void dispose() {
+        sm.dispose();
         assetManager.dispose();
     }
 }

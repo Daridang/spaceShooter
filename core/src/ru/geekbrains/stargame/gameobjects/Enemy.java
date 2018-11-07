@@ -27,20 +27,20 @@ import ru.geekbrains.stargame.pools.BulletPool;
 
 public class Enemy implements Pool.Poolable {
 
-    private Rectangle hitBox;
-    private Vector2 position;
+    protected Rectangle hitBox;
+    protected Vector2 position;
     private TextureRegion region;
     private TextureAtlas atlas;
     private Random random;
-    private float speed;
-    private boolean isActive = false;
+    protected float speed;
+    protected boolean isActive = false;
     private StarGame game;
 
-    private BulletPool bulletPool;
-    private DelayedRemovalArray<Bullet> activeBullets;
+    protected BulletPool bulletPool;
+    protected DelayedRemovalArray<Bullet> activeBullets;
 
-    private float deltaTime;
-    private long fireTime;
+    protected float deltaTime;
+    protected long fireTime;
 
     public Enemy(StarGame game) {
         this.game = game;

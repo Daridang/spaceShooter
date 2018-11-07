@@ -57,6 +57,7 @@ public class LoadingScreen extends ScreenAdapter {
                 new BitmapFontLoader.BitmapFontParameter();
         bfp.atlasName = "texture_asset.atlas";
 
+        game.getAssetManager().load("alien_boss.png", Texture.class);
         game.getAssetManager().load("laser_beam.png", Texture.class);
         game.getAssetManager().load("space_font.fnt", BitmapFont.class, bfp);
         game.getAssetManager().load("laser2.mp3", Sound.class);

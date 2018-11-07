@@ -35,15 +35,15 @@ public class StarGameHud {
         final String scoreStr = "Score\n" + score;
         final String livesStr = "Lives\n" + lives;
 
-        font.draw(batch, scoreStr, 20, StarGame.WORLD_HEIGHT - 20);
+        font.draw(batch, scoreStr, 20, Global.HEIGHT - 20);
         font.draw(
-                batch, livesStr, StarGame.WORLD_WIDTH - 200, StarGame.WORLD_HEIGHT - 20
+                batch, livesStr, Global.WIDTH - 200, Global.HEIGHT - 20
         );
 
         batch.draw(
                 hpBackground,
-                StarGame.WORLD_WIDTH / 2 - hpBackground.getWidth() / 2,
-                StarGame.WORLD_HEIGHT - 40
+                Global.WIDTH / 2 - hpBackground.getWidth() / 2,
+                Global.HEIGHT - 40
         );
         batch.draw(
                 hpLeft,

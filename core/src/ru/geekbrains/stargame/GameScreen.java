@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.DelayedRemovalArray;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import ru.geekbrains.stargame.animations.Background;
@@ -53,7 +54,12 @@ public class GameScreen extends Base2DScreen {
     private ShapeRenderer r;
 
     private int pScore = 0;
-    //private int pLives = 3;
+
+    // TEST
+    private float gamePlayTime;
+    private long gameStartTime;
+    private boolean isBossHere = false;
+    private TheBoss boss;
 
     public GameScreen(StarGame game) {
         this.game = game;
@@ -99,15 +105,21 @@ public class GameScreen extends Base2DScreen {
         explosionPool = new ExplosionPool(atlas);
 
         game.getSm().getBattleInTheStars().setLooping(true);
-        //game.getSm().getBattleInTheStars().setVolume(Global.MUSIC_VOLUME);
         game.getSm().getBattleInTheStars().play();
         r = new ShapeRenderer();
+
+        // TEST
+        gameStartTime = TimeUtils.millis();
+        boss = new TheBoss(game);
     }
 
     public void render(float delta) {
         super.render(delta);
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // TEST
+        gamePlayTime = TimeUtils.millis() - gameStartTime;
 
         stage.getViewport().getCamera().update();
         batch.setProjectionMatrix(stage.getViewport().getCamera().combined);
@@ -124,7 +136,9 @@ public class GameScreen extends Base2DScreen {
 
         // Враги
         activeEnemies.begin();
-        randomEnemySpawn();
+        if (!isBossHere) {
+            randomEnemySpawn();
+        }
 
         // Если в списке находятся активные противники, рендерим.
         for (Enemy e : activeEnemies) {
@@ -167,6 +181,8 @@ public class GameScreen extends Base2DScreen {
         }
         lightning.end();
 
+        enterTheBoss(delta);
+
         BulletEmitter.getInstance().render(batch);
         if (hud.isShown()) {
             hud.render(batch, player.getLives(), pScore, player.getHitPoints());
@@ -199,10 +215,20 @@ public class GameScreen extends Base2DScreen {
 //        r.end();
     }
 
+    private void enterTheBoss(float delta) {
+        if (gamePlayTime > 20000) {
+            activeEnemies.clear();
+            isBossHere = true;
+            game.getSm().getBattleInTheStars().stop();
+            game.getSm().getBossTheme().play();
+            boss.render(batch, delta);
+            boss.setIsActive(true);
+        }
+    }
+
     private void playerGameOver() {
         if (player.getLives() < 1) {
             game.getSm().getBattleInTheStars().stop();
-            //game.getSm().getGameOver().setVolume(Global.MUSIC_VOLUME);
             game.getSm().getGameOver().play();
             hud.setShown(false);
             gameOver.setShown(true);
@@ -218,15 +244,64 @@ public class GameScreen extends Base2DScreen {
         game.getSm().getExplosion().play(Global.SOUND_VOLUME);
     }
 
+    private void forBoss() {
+        if (boss.getHitBox().overlaps(player.getHitBox())) {
+            explode(player.getPosition());
+            player.setAlive(false);
+            player.setLives(-1);
+            player.setAlive(true);
+            player.setPosition(player.getRespawnPosition().cpy());
+            player.setHitPoints(10);
+        }
+
+        for (Bullet b : boss.getActiveBullets()) {
+            if (b.active) {
+                if (b.getHitBox().overlaps(player.getHitBox()) && player.isAlive()) {
+                    player.setGotHit(true);
+                    b.destroy();
+                    boss.getBulletPool().free(b);
+
+                    player.setHitPoints(-1);
+                    if (player.getHitPoints() < 1) {
+                        explode(player.getPosition());
+                        player.setAlive(false);
+                        player.setLives(-1);
+                        player.setAlive(true);
+                        player.setPosition(player.getRespawnPosition().cpy());
+                        player.setHitPoints(10);
+                    }
+                }
+                playerGameOver();
+            }
+        }
+
+        for (Bullet b : BulletEmitter.getInstance().bullets) {
+            if (b.active) {
+                if (boss.getHitBox().overlaps(b.getHitBox())
+                        && boss.getHitPoints() > 0) {
+                    boss.setHitPoints(-1);
+                    if (boss.getHitPoints() < 1) {
+                        boss.setIsActive(false);
+                        game.getSm().getBossTheme().stop();
+                        game.getSm().getVictory().play();
+                        // playerWins();
+                    }
+                    b.destroy();
+
+                    explode(new Vector2(
+                            boss.getPosition().x + boss.getHitBox().width / 2,
+                            boss.getPosition().y + boss.getHitBox().height / 2
+                    ));
+                    pScore++;
+                }
+            }
+        }
+    }
+
     private void forEnemy() {
         for (Enemy e : activeEnemies) {
             if (e.getHitBox().overlaps(player.getHitBox()) && player.isAlive()) {
                 player.setGotHit(true);
-
-                // При столкновении с кораблем противника взрыв корабля игрока
-                //explode(player.getPosition());
-
-                // и корабля противника
                 e.setIsActive(false);
                 explode(e.getPosition());
 
@@ -323,6 +398,7 @@ public class GameScreen extends Base2DScreen {
     private void collisionDetection() {
         forEnemy();
         forAsteroids();
+        forBoss();
     }
 
     @Override
@@ -343,12 +419,13 @@ public class GameScreen extends Base2DScreen {
         player.setTargetSet(true);
 
         if (!player.isAlive()) {
+            activeEnemies.clear();
+            activeAsteroids.clear();
             player.respawn();
             gameOver.setShown(false);
             hud.setShown(true);
             pScore = 0;
             game.getSm().getGameOver().stop();
-            //game.getSm().getBattleInTheStars().setVolume(Global.MUSIC_VOLUME);
             game.getSm().getBattleInTheStars().play();
         }
         return super.touchDown(screenX, screenY, pointer, button);

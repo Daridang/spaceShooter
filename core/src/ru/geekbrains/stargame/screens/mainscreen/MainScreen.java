@@ -53,7 +53,6 @@ public class MainScreen extends Base2DScreen {
         }
 
         game.getSm().getLoadedSFX();
-        //game.getSm().getMenuMusic().setVolume(Global.MUSIC_VOLUME);
         game.getSm().getMenuMusic().setLooping(true);
         game.getSm().getMenuMusic().play();
 
