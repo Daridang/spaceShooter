@@ -99,7 +99,7 @@ public class Enemy implements Pool.Poolable {
 
     public void render(SpriteBatch batch, float delta) {
         position.y -= speed * delta;
-        if (position.y + region.getRegionHeight() * 2 < 0) {
+        if (position.y + region.getRegionHeight() < 0) {
             isActive = false;
         }
 

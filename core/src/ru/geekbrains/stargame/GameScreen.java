@@ -1,6 +1,7 @@
 package ru.geekbrains.stargame;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -55,7 +56,6 @@ public class GameScreen extends Base2DScreen {
 
     private int pScore = 0;
 
-    // TEST
     private float gamePlayTime;
     private long gameStartTime;
     private boolean isBossHere = false;
@@ -108,9 +108,14 @@ public class GameScreen extends Base2DScreen {
         game.getSm().getBattleInTheStars().play();
         r = new ShapeRenderer();
 
-        // TEST
         gameStartTime = TimeUtils.millis();
         boss = new TheBoss(game);
+
+        // TESTING IN PROGRESS
+        InputMultiplexer im = new InputMultiplexer();
+        im.addProcessor(stage);
+        im.addProcessor(this);
+        Gdx.input.setInputProcessor(im);
     }
 
     public void render(float delta) {
@@ -118,7 +123,6 @@ public class GameScreen extends Base2DScreen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // TEST
         gamePlayTime = TimeUtils.millis() - gameStartTime;
 
         stage.getViewport().getCamera().update();
@@ -128,11 +132,14 @@ public class GameScreen extends Base2DScreen {
 
         batch.begin();
         // прорисовка текстур здесь
-        // Рисуем игрока, если жив.
         background.render(delta, batch);
+
+        // Рисуем игрока, если жив.
         if (player.isAlive()) {
             player.render(batch, delta);
         }
+
+        enterTheBoss(delta);
 
         // Враги
         activeEnemies.begin();
@@ -181,8 +188,6 @@ public class GameScreen extends Base2DScreen {
         }
         lightning.end();
 
-        enterTheBoss(delta);
-
         BulletEmitter.getInstance().render(batch);
         if (hud.isShown()) {
             hud.render(batch, player.getLives(), pScore, player.getHitPoints());
@@ -198,37 +203,26 @@ public class GameScreen extends Base2DScreen {
 
         stage.act(delta);
         stage.draw();
-        // debug
-//        r.begin(ShapeRenderer.ShapeType.Line);
-//        r.setProjectionMatrix(stage.getViewport().getCamera().combined);
-//
-//        for (Enemy e : activeEnemies) {
-//            for (Bullet b : e.getActiveBullets()) {
-//                r.rect(
-//                        b.getHitBox().x,
-//                        b.getHitBox().y,
-//                        b.getHitBox().width,
-//                        b.getHitBox().height
-//                );
-//            }
-//        }
-//        r.end();
     }
 
     private void enterTheBoss(float delta) {
-        if (gamePlayTime > 20000) {
+        if (gamePlayTime > 20000 && !boss.isKilled()) {
             activeEnemies.clear();
             isBossHere = true;
+            boss.setIsActive(true);
             game.getSm().getBattleInTheStars().stop();
             game.getSm().getBossTheme().play();
             boss.render(batch, delta);
-            boss.setIsActive(true);
         }
     }
 
     private void playerGameOver() {
         if (player.getLives() < 1) {
-            game.getSm().getBattleInTheStars().stop();
+            if (game.getSm().getBossTheme().isPlaying()) {
+                game.getSm().getBossTheme().stop();
+            } else if (game.getSm().getBattleInTheStars().isPlaying()) {
+                game.getSm().getBattleInTheStars().stop();
+            }
             game.getSm().getGameOver().play();
             hud.setShown(false);
             gameOver.setShown(true);
@@ -282,7 +276,11 @@ public class GameScreen extends Base2DScreen {
                     boss.setHitPoints(-1);
                     if (boss.getHitPoints() < 1) {
                         boss.setIsActive(false);
-                        game.getSm().getBossTheme().stop();
+                        boss.setIsKilled(true);
+                        if (game.getSm().getBossTheme().isPlaying()) {
+                            game.getSm().getBossTheme().stop();
+                        }
+
                         game.getSm().getVictory().play();
                         // playerWins();
                     }

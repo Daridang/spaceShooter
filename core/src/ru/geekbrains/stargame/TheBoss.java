@@ -27,13 +27,15 @@ public class TheBoss extends Enemy {
     private boolean atRight;
 
     private int hitPoints = 20;
+    private boolean isKilled;
 
     public TheBoss(StarGame game) {
         super(game);
         this.game = game;
         boss = game.getAssetManager().get("alien_boss.png");
         isActive = false;
-        position = new Vector2(Global.WIDTH / 3, Global.HEIGHT + boss.getHeight() * 2);
+        isKilled = false;
+        position = new Vector2(Global.WIDTH / 3, Global.HEIGHT + boss.getHeight());
         hitBox.set(position.x, position.y, boss.getWidth(), boss.getHeight());
         atRight = true;
         deltaTime = MathUtils.random(1000f, 2000f);
@@ -132,4 +134,11 @@ public class TheBoss extends Enemy {
         this.hitPoints += hitPoints;
     }
 
+    public boolean isKilled() {
+        return isKilled;
+    }
+
+    public void setIsKilled(boolean killed) {
+        isKilled = killed;
+    }
 }
