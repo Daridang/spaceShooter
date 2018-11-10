@@ -7,6 +7,7 @@ import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 
+import ru.geekbrains.stargame.pools.JustPoolTest;
 import ru.geekbrains.stargame.screens.mainscreen.MainScreen;
 
 public class StarGame extends Game {
@@ -36,6 +37,8 @@ public class StarGame extends Game {
         loadingScreen = new LoadingScreen(this);
         mainScreen = new MainScreen(this);
         setScreen(loadingScreen);
+
+        JustPoolTest j = new JustPoolTest();
     }
 
     public AssetManager getAssetManager() {

@@ -1,0 +1,229 @@
+shields.png
+size: 256, 1792
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bonus
+  rotate: false
+  xy: 0, 0
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+bonus
+  rotate: false
+  xy: 64, 0
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+bonus
+  rotate: false
+  xy: 128, 0
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 2
+bonus
+  rotate: false
+  xy: 192, 0
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 3
+bonus
+  rotate: false
+  xy: 0, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 4
+bonus
+  rotate: false
+  xy: 64, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 5
+bonus
+  rotate: false
+  xy: 128, 64
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 6
+d
+  rotate: false
+  xy: 0, 128
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 1
+d
+  rotate: false
+  xy: 128, 128
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 2
+d
+  rotate: false
+  xy: 0, 256
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 3
+d
+  rotate: false
+  xy: 128, 256
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 4
+d
+  rotate: false
+  xy: 0, 384
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 5
+d
+  rotate: false
+  xy: 128, 384
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 6
+d
+  rotate: false
+  xy: 0, 512
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 7
+d
+  rotate: false
+  xy: 128, 512
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 8
+d
+  rotate: false
+  xy: 0, 640
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 9
+d
+  rotate: false
+  xy: 128, 640
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 10
+d
+  rotate: false
+  xy: 0, 768
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 11
+d
+  rotate: false
+  xy: 128, 768
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 12
+d
+  rotate: false
+  xy: 0, 896
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 13
+s
+  rotate: false
+  xy: 128, 896
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 0
+s
+  rotate: false
+  xy: 0, 1024
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 1
+s
+  rotate: false
+  xy: 128, 1024
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 2
+s
+  rotate: false
+  xy: 0, 1152
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 3
+s
+  rotate: false
+  xy: 128, 1152
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 4
+s
+  rotate: false
+  xy: 0, 1280
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 5
+s
+  rotate: false
+  xy: 128, 1280
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 6
+s
+  rotate: false
+  xy: 0, 1408
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 7
+s
+  rotate: false
+  xy: 128, 1408
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 8
+s
+  rotate: false
+  xy: 0, 1536
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 9
+s
+  rotate: false
+  xy: 128, 1536
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 10
+s
+  rotate: false
+  xy: 0, 1664
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: 11

@@ -15,7 +15,7 @@ import com.badlogic.gdx.math.Vector2;
 import ru.geekbrains.stargame.Global;
 import ru.geekbrains.stargame.StarGame;
 import ru.geekbrains.stargame.animations.PlayerAnimation;
-
+import ru.geekbrains.stargame.pools.ShieldPool;
 
 
 public class Player {
@@ -40,6 +40,14 @@ public class Player {
 
     private boolean gotHit;
 
+    private ShieldPool shieldPool;
+
+    public Shield getSh() {
+        return sh;
+    }
+
+    private Shield sh;
+
     public Player(StarGame game) {
         this.game = game;
         atlas = game.getAssetManager().get("texture_asset.atlas");
@@ -60,6 +68,7 @@ public class Player {
         );
         hitCircle = new Circle(position, WIDTH / 2);
         gotHit = false;
+        shieldPool = new ShieldPool((TextureAtlas) game.getAssetManager().get("shields.atlas"));
     }
 
     private void update() {
@@ -149,6 +158,11 @@ public class Player {
                     region.getRegionWidth(), region.getRegionHeight(),
                     1f, 1f, angle
             );
+        }
+
+        if (sh != null && sh.isActive()) {
+            sh.render(batch, delta);
+            sh.setShieldPos(position);
         }
     }
 
@@ -281,4 +295,9 @@ public class Player {
         this.hitPoints += hitPoints;
     }
 
+    public void setShield() {
+        sh = shieldPool.obtain();
+        sh.setActive(true);
+        sh.setShieldPos(position);
+    }
 }

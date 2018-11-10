@@ -52,6 +52,7 @@ public class LoadingScreen extends ScreenAdapter {
         renderer = new ShapeRenderer();
 
         game.getAssetManager().load("texture_asset.atlas", TextureAtlas.class);
+        game.getAssetManager().load("shields.atlas", TextureAtlas.class);
 
         BitmapFontLoader.BitmapFontParameter bfp =
                 new BitmapFontLoader.BitmapFontParameter();

@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import ru.geekbrains.stargame.animations.Background;
 import ru.geekbrains.stargame.animations.ExplosionAnimation;
 import ru.geekbrains.stargame.pools.AsteroidsPool;
+import ru.geekbrains.stargame.pools.BonusPool;
 import ru.geekbrains.stargame.pools.EnemiesPool;
 import ru.geekbrains.stargame.pools.ExplosionPool;
 import ru.geekbrains.stargame.animations.LightningAnimation;
@@ -40,6 +41,7 @@ public class GameScreen extends Base2DScreen {
     private Stage stage;
     private StarGame game;
     private TextureAtlas atlas;
+    private TextureAtlas bonusAtlas;
     private BitmapFont font;
     private Background background;
     private Player player;
@@ -53,6 +55,8 @@ public class GameScreen extends Base2DScreen {
     private StarGameHud hud;
     private GameOverOverlay gameOver;
     private ShapeRenderer r;
+    private DelayedRemovalArray<Bonus> bonuses;
+    private BonusPool bonusPool;
 
     private int pScore = 0;
 
@@ -60,6 +64,8 @@ public class GameScreen extends Base2DScreen {
     private long gameStartTime;
     private boolean isBossHere = false;
     private TheBoss boss;
+
+    private Bonus bonus;
 
     public GameScreen(StarGame game) {
         this.game = game;
@@ -83,6 +89,7 @@ public class GameScreen extends Base2DScreen {
 
         font = game.getAssetManager().get("space_font.fnt");
         atlas = game.getAssetManager().get("texture_asset.atlas");
+        bonusAtlas = game.getAssetManager().get("shields.atlas");
 
         // Основная информация на игровом экране: очки, жизни.
         hud = new StarGameHud(font);
@@ -110,6 +117,9 @@ public class GameScreen extends Base2DScreen {
 
         gameStartTime = TimeUtils.millis();
         boss = new TheBoss(game);
+
+        bonuses = new DelayedRemovalArray<Bonus>();
+        bonusPool = new BonusPool(bonusAtlas);
 
         // TESTING IN PROGRESS
         InputMultiplexer im = new InputMultiplexer();
@@ -188,6 +198,10 @@ public class GameScreen extends Base2DScreen {
         }
         lightning.end();
 
+        for (Bonus b : bonuses) {
+            b.draw(batch, delta);
+        }
+
         BulletEmitter.getInstance().render(batch);
         if (hud.isShown()) {
             hud.render(batch, player.getLives(), pScore, player.getHitPoints());
@@ -255,14 +269,19 @@ public class GameScreen extends Base2DScreen {
                     b.destroy();
                     boss.getBulletPool().free(b);
 
-                    player.setHitPoints(-1);
-                    if (player.getHitPoints() < 1) {
-                        explode(player.getPosition());
-                        player.setAlive(false);
-                        player.setLives(-1);
-                        player.setAlive(true);
-                        player.setPosition(player.getRespawnPosition().cpy());
-                        player.setHitPoints(10);
+                    if (player.getSh() != null && player.getSh().isActive()) {
+                        player.getSh().setPower(-1);
+                    } else {
+
+                        player.setHitPoints(-1);
+                        if (player.getHitPoints() < 1) {
+                            explode(player.getPosition());
+                            player.setAlive(false);
+                            player.setLives(-1);
+                            player.setAlive(true);
+                            player.setPosition(player.getRespawnPosition().cpy());
+                            player.setHitPoints(10);
+                        }
                     }
                 }
                 playerGameOver();
@@ -303,15 +322,20 @@ public class GameScreen extends Base2DScreen {
                 e.setIsActive(false);
                 explode(e.getPosition());
 
-                player.setHitPoints(-1);
+                if (player.getSh() != null && player.getSh().isActive()) {
+                    player.getSh().setPower(-1);
+                } else {
 
-                if (player.getHitPoints() < 1) {
-                    explode(player.getPosition());
-                    player.setAlive(false);
-                    player.setLives(-1);
-                    player.setAlive(true);
-                    player.setPosition(player.getRespawnPosition().cpy());
-                    player.setHitPoints(10);
+                    player.setHitPoints(-1);
+
+                    if (player.getHitPoints() < 1) {
+                        explode(player.getPosition());
+                        player.setAlive(false);
+                        player.setLives(-1);
+                        player.setAlive(true);
+                        player.setPosition(player.getRespawnPosition().cpy());
+                        player.setHitPoints(10);
+                    }
                 }
 
                 playerGameOver();
@@ -325,15 +349,19 @@ public class GameScreen extends Base2DScreen {
                         player.setGotHit(true);
                         b.destroy();
                         e.getBulletPool().free(b);
-                        player.setHitPoints(-1);
+                        if (player.getSh() != null && player.getSh().isActive()) {
+                            player.getSh().setPower(-1);
+                        } else {
+                            player.setHitPoints(-1);
 
-                        if (player.getHitPoints() < 1) {
-                            explode(player.getPosition());
-                            player.setAlive(false);
-                            player.setLives(-1);
-                            player.setAlive(true);
-                            player.setPosition(player.getRespawnPosition().cpy());
-                            player.setHitPoints(10);
+                            if (player.getHitPoints() < 1) {
+                                explode(player.getPosition());
+                                player.setAlive(false);
+                                player.setLives(-1);
+                                player.setAlive(true);
+                                player.setPosition(player.getRespawnPosition().cpy());
+                                player.setHitPoints(10);
+                            }
                         }
                     }
                 }
@@ -365,15 +393,21 @@ public class GameScreen extends Base2DScreen {
                 explode(a.getPosition());
                 a.setIsActive(false);
 
-                player.setHitPoints(-1);
-                if (player.getHitPoints() < 1) {
-                    explode(player.getPosition());
-                    player.setAlive(false);
-                    player.setLives(-1);
-                    player.setAlive(true);
-                    player.setPosition(player.getRespawnPosition().cpy());
-                    player.setHitPoints(10);
-                }
+                if (player.getSh() != null && player.getSh().isActive()) {
+                    player.getSh().setPower(-1);
+                } else {
+
+                    player.setHitPoints(-1);
+                    if (player.getHitPoints() < 1) {
+                        explode(player.getPosition());
+                        player.setAlive(false);
+                        player.setLives(-1);
+                        player.setAlive(true);
+                        player.setPosition(player.getRespawnPosition().cpy());
+                        player.setHitPoints(10);
+                    }
+                 }
+
                 playerGameOver();
             }
             for (Bullet b : BulletEmitter.getInstance().bullets) {
@@ -387,8 +421,24 @@ public class GameScreen extends Base2DScreen {
                                 a.getPosition().y + a.getHitBox().radius / 2
                         ));
                         pScore++;
+                        bonus = bonusPool.obtain();
+                        bonus.setActive(true);
+                        bonus.setPos(a.getPosition());
+                        bonus.setSpeed(a.getSpeed());
+                        bonuses.add(bonus);
                     }
                 }
+            }
+        }
+    }
+
+    private void forBonuses() {
+        for (Bonus b : bonuses) {
+            if (b.getHitBox().overlaps(player.getHitBox())) {
+                b.setActive(false);
+                bonuses.removeValue(b, true);
+                bonusPool.free(b);
+                player.setShield();
             }
         }
     }
@@ -397,6 +447,7 @@ public class GameScreen extends Base2DScreen {
         forEnemy();
         forAsteroids();
         forBoss();
+        forBonuses();
     }
 
     @Override
