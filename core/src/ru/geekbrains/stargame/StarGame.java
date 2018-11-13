@@ -3,11 +3,7 @@ package ru.geekbrains.stargame;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 
-import ru.geekbrains.stargame.pools.JustPoolTest;
 import ru.geekbrains.stargame.screens.mainscreen.MainScreen;
 
 public class StarGame extends Game {
@@ -27,7 +23,7 @@ public class StarGame extends Game {
 
     private final AssetManager assetManager = new AssetManager();
 
-    private final  SoundManager sm = new SoundManager(assetManager);
+    private final SoundManager sm = new SoundManager(assetManager);
 
 
     @Override
@@ -38,7 +34,6 @@ public class StarGame extends Game {
         mainScreen = new MainScreen(this);
         setScreen(loadingScreen);
 
-        JustPoolTest j = new JustPoolTest();
     }
 
     public AssetManager getAssetManager() {

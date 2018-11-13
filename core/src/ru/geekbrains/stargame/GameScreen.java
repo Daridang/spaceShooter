@@ -1,6 +1,7 @@
 package ru.geekbrains.stargame;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -23,6 +24,7 @@ import ru.geekbrains.stargame.pools.ExplosionPool;
 import ru.geekbrains.stargame.animations.LightningAnimation;
 import ru.geekbrains.stargame.screens.Base2DScreen;
 import ru.geekbrains.stargame.gameobjects.*;
+import ru.geekbrains.stargame.screens.MsgOverlay;
 
 /**
  * Created by
@@ -66,6 +68,12 @@ public class GameScreen extends Base2DScreen {
     private TheBoss boss;
 
     private Bonus bonus;
+
+    private MsgOverlay beginningMessage;
+    private long beginningMsgStartTime;
+    private float messageDuration = 5000f;
+    private long bossKilledTime;
+    private long playerDeathTime;
 
     public GameScreen(StarGame game) {
         this.game = game;
@@ -121,6 +129,11 @@ public class GameScreen extends Base2DScreen {
         bonuses = new DelayedRemovalArray<Bonus>();
         bonusPool = new BonusPool(bonusAtlas);
 
+        beginningMessage = new MsgOverlay();
+        beginningMsgStartTime = TimeUtils.millis();
+
+        //Gdx.input.setCatchBackKey(true);
+
         // TESTING IN PROGRESS
         InputMultiplexer im = new InputMultiplexer();
         im.addProcessor(stage);
@@ -132,6 +145,10 @@ public class GameScreen extends Base2DScreen {
         super.render(delta);
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+//        if (Gdx.input.isKeyPressed(Input.Keys.BACK)) {
+//            game.setScreen(game.getScreenType(StarGame.ScreenType.MAIN_SCREEN));
+//        }
 
         gamePlayTime = TimeUtils.millis() - gameStartTime;
 
@@ -149,6 +166,15 @@ public class GameScreen extends Base2DScreen {
             player.render(batch, delta);
         }
 
+        // Астероиды
+        activeAsteroids.begin();
+        randomAsteroidsSpawn();
+        for (Asteroids a : activeAsteroids) {
+            a.render(batch, delta);
+        }
+        removeAsteroid();
+        activeAsteroids.end();
+
         enterTheBoss(delta);
 
         // Враги
@@ -163,15 +189,6 @@ public class GameScreen extends Base2DScreen {
         }
         removeEnemy();
         activeEnemies.end();
-
-        // Астероиды
-        activeAsteroids.begin();
-        randomAsteroidsSpawn();
-        for (Asteroids a : activeAsteroids) {
-            a.render(batch, delta);
-        }
-        removeAsteroid();
-        activeAsteroids.end();
 
         // Анимация взрывов.
         activeExplosions.begin();
@@ -210,6 +227,9 @@ public class GameScreen extends Base2DScreen {
         if (gameOver.isShown()) {
             gameOver.render(batch);
         }
+
+        msgDraw();
+
         batch.end();
 
         BulletEmitter.getInstance().update(delta);
@@ -217,6 +237,23 @@ public class GameScreen extends Base2DScreen {
 
         stage.act(delta);
         stage.draw();
+    }
+
+    private void msgDraw() {
+
+        if (TimeUtils.timeSinceMillis(beginningMsgStartTime) < messageDuration) {
+            beginningMessage.render(batch, Global.START_MSG);
+        }
+
+        if (boss.isKilled()
+                && TimeUtils.timeSinceMillis(bossKilledTime) < messageDuration) {
+            beginningMessage.render(batch, Global.CLEAR_MSG);
+        }
+
+        if (gameOver.isShown()
+                && TimeUtils.timeSinceMillis(playerDeathTime) < messageDuration) {
+            beginningMessage.render(batch, Global.LOST_MSG);
+        }
     }
 
     private void enterTheBoss(float delta) {
@@ -241,6 +278,9 @@ public class GameScreen extends Base2DScreen {
             hud.setShown(false);
             gameOver.setShown(true);
             player.setAlive(false);
+            if (playerDeathTime == 0) {
+                playerDeathTime = TimeUtils.millis();
+            }
         }
     }
 
@@ -253,7 +293,8 @@ public class GameScreen extends Base2DScreen {
     }
 
     private void forBoss() {
-        if (boss.getHitBox().overlaps(player.getHitBox())) {
+        if (boss.getHitBox().overlaps(player.getHitBox())
+                && boss.isActive() && !boss.isKilled()) {
             explode(player.getPosition());
             player.setAlive(false);
             player.setLives(-1);
@@ -300,6 +341,7 @@ public class GameScreen extends Base2DScreen {
                             game.getSm().getBossTheme().stop();
                         }
 
+                        bossKilledTime = TimeUtils.millis();
                         game.getSm().getVictory().play();
                         // playerWins();
                     }

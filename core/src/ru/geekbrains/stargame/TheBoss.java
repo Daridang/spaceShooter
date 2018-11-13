@@ -140,7 +140,5 @@ public class TheBoss extends Enemy {
 
     public void setIsKilled(boolean killed) {
         isKilled = killed;
-        position.set(-100f, -100f);
-        hitBox.setPosition(position);
     }
 }

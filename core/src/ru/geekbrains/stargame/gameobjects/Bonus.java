@@ -32,7 +32,7 @@ public class Bonus implements Pool.Poolable {
         active = false;
         pos = new Vector2();
         bonusRegion = atlas.findRegions("bonus");
-        bonusAnim = new Animation<TextureAtlas.AtlasRegion>(
+        bonusAnim = new Animation<>(
                 0.03f, bonusRegion, Animation.PlayMode.LOOP
         );
         hitBox = new Rectangle();
